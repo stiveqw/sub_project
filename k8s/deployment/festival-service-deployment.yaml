@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: festival-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: festival-service
+  template:
+    metadata:
+      labels:
+        app: festival-service
+    spec:
+      containers:
+      - name: festival-service
+        image: wnahd000/festival-service:latest
+        ports:
+        - containerPort: 5002
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: DB_NAME
+          value: festival_db
+        - name: FESTIVAL_SERVICE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: festival-service-secret
+              key: secret-key
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: festival-service-secret
+              key: jwt-secret-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: festival-service
+spec:
+  selector:
+    app: festival-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5002
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: festival-service-secret
+type: Opaque
+stringData:
+  secret-key: your_festival_service_secret_key_here
+  jwt-secret-key: your_jwt_secret_key_here
+

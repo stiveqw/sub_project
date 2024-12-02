@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login-service
+  template:
+    metadata:
+      labels:
+        app: login-service
+    spec:
+      containers:
+      - name: login-service
+        image: wnahd000/login-service:latest
+        ports:
+        - containerPort: 5006
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: DB_NAME
+          value: user_db
+        - name: LOGIN_SERVICE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: login-service-secret
+              key: secret-key
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: login-service-secret
+              key: jwt-secret-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: login-service
+spec:
+  selector:
+    app: login-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5006
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: login-service-secret
+type: Opaque
+stringData:
+  secret-key: your_login_service_secret_key_here
+  jwt-secret-key: your_jwt_secret_key_here
+
