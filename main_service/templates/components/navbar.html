@@ -1,0 +1,17 @@
+<header>
+    <nav>
+        <div class="logo">University Services</div>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('festival') }}">Festival</a></li>
+            <li><a href="{{ url_for('news') }}">News</a></li>
+            <li><a href="{{ url_for('course_registration') }}">Course registration</a></li>
+            <li>
+                <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer;">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+

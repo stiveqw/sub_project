@@ -1,0 +1,17 @@
+2024-12-02 09:07:43,998 WARNING:  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2024-12-02 09:07:43,999 INFO:  * Running on http://220.76.29.171:5003/ (Press CTRL+C to quit)
+2024-12-02 09:07:52,999 DEBUG: JWT verified for request to index
+2024-12-02 09:07:52,999 DEBUG: JWT verified successfully
+2024-12-02 09:07:53,000 INFO: User 17 accessed the main page
+2024-12-02 09:07:53,011 ERROR: Error in index route: Could not build url for endpoint 'home'. Did you mean 'index' instead?
+2024-12-02 09:07:53,011 INFO: 127.0.0.1 - - [02/Dec/2024 09:07:53] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2024-12-02 09:08:04,483 WARNING:  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2024-12-02 09:08:04,484 INFO:  * Running on http://220.76.29.171:5003/ (Press CTRL+C to quit)
+2024-12-02 09:11:24,563 WARNING:  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2024-12-02 09:11:24,564 INFO:  * Running on http://220.76.29.171:5003/ (Press CTRL+C to quit)
+2024-12-02 09:17:18,132 WARNING:  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2024-12-02 09:17:18,133 INFO:  * Running on http://220.76.29.171:5003/ (Press CTRL+C to quit)

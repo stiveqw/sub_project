@@ -1,0 +1,108 @@
+flask-microservices/
+│
+├── api_gateway/
+│   ├── .env
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── config.py
+│   └── api_gateway.py
+│
+├── login_service/
+│   ├── .env
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── login_service.py
+│   ├── config.py
+│   └── models.py
+│
+├── course_service/
+│   ├── .env
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── config.py
+│   ├── course_service.py
+│   └── models.py
+│
+├── festival_service/
+├── __pycache__
+│   └── config.cpython-312.pyc
+├── __init__.py
+├── festival_service.py
+├── config.py
+├── requirements.txt
+├── Dockerfile
+├── router.py 
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── images/
+│   │   └── .gitkeep
+│   └── js/
+│       ├── main.js
+│       └── apply.js
+├── templates/
+│   ├── components/
+│   │   ├── navbar.html
+│   │   └── footer.html
+│   ├── base.html
+│   ├── festival_main.html
+│   ├── festival_apply.html
+│   ├── eroor.html
+│   └── about.html
+├── reservations.json
+├── seat_counts.json
+│
+├── main_service/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── main_service.py
+│   ├── config.py
+│   └── models.py
+│
+├── notice_service/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── config.py
+│   ├── notice_service.py
+│   └── models.py
+│
+├── mysql
+├── nginx/
+│   └── nginx.conf
+│
+└── docker-compose.yml
+
+project-database-image/
+│
+├── blobs/
+│   └── sha256/
+│       ├── 0a231028f7bba91f53ceea9ed8ccfc4c734d389004b65ca70d7efd88e1846c97
+│       ├── 0af6d64d31f6d68d5a235951f10ea20059eba5e010c478b664c7ca2fdaf9da6c
+│       ├── 1ddccd5f8f9e97f33cec2edfbd201363b469257d93ffcb128ccb79e0146cf977
+│       ├── 2ed8a03f302fc7252331050d7279f7742064bc87811596f026f17fbc4dc98ed6
+│       ├── 4e018e9899eb27e3691333b31ec10aadd0af3c0e66f0398d82d7ada52bb8f339
+│       ├── 5ac2b5619a84b8cd6055ac11f3cc1a0ceca0cf5c16ed449c150d93ee63915177
+│       ├── 7e603f53aed1730646e7d1b4ca5defb75e517a6b284de01712d4111e24371aea
+│       ├── 43d0e62d1401410b393397c0c4fb75dc2af6d5db1b0a75622f2039d63de09666
+│       ├── 78d222d8d347134ecbabaa34df38d792a2b84825249f71464200bdbe7f0eefbd
+│       ├── 238a03116078eee1871c49fcb4a8f54a5c7188508b8f8519b73aa9c7deb9e694
+│       ├── 754edabc2ccb574109d5dd09526a7b1a2c992f14fde109d7e24a1a8ca50febd4
+│       ├── 916f71f288debc5f7eac5b61caa9293ebe4c66629d61752b6add7dd7d5888935
+│       ├── 6383b3cbb7ff81c33c04e3541ac1d0f0d36f2554e71b6367141d4d3d32e44f6d
+│       ├── 7600fdef234bf101e8f4027a1c27c783cf1e502e2de00f676d99aeaf1d6cc5ef
+│       ├── 20466b7f6582994254b0a2a7e35679be7dd7c1b109eebc16165feece2d5487dc
+│       ├── 78080a490f63a6c70fb2bb5af8615d1cf5f3435abadc792bc45e487bc49a8b8d
+│       ├── 595880a638fc1176262fd1b118ad18f109bf93155a3a794ad2c32ba70fafdba7
+│       ├── aa8c55fe2e777e5cb2e9fca6c96d279c3a8b4970125230c59b5bfc6a347ad239
+│       ├── bad6f6fa0a06452bd93bc3e7a4bb82b56059de7b30ec056145707b51b4296556
+│       ├── bf3984de91efa2491b14db14c68b80cbc6da2ab3e123384bca401e049954e8dd
+│       ├── cadedf47cc2b316a4134a2e2fc236c61ef7e5b007ec93cc358887824321b10b8
+│       ├── cbbb92add948976c02514fbe8da4c9737e867cad6383254e63576760f88dc2c0
+│       ├── e9e263909c0aa7fd6c88b614149a2cb91c36a6890c59c7bf02ad3c8cde60425d
+│       ├── ee5eb59be4ddc5b598014d4c7eba04651f30507630aaec32ab58cec033605ad2
+│       ├── f8bfdff83aacbd7bc6c1830a382ad93dc152a95e80aa0f8a0204b3c26e9c4f85
+│       └── fd9fbb13435b20739d5c288d98371fee36bd96d75cd2b7b1618acdfcc5605933
+├── index.json
+├── manifest.json
+├── oci-layout
+└── repositories
