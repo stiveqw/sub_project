@@ -5,59 +5,6 @@ body {
     padding: 20px;
 }
 
-header {
-    background-color: black;
-    color: white;
-    padding: 1rem;
-    margin-bottom: 20px;
-}
-
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-nav ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-}
-
-nav ul li {
-    margin-left: 1rem;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-nav ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.logout-btn {
-    background-color: #f44336;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.logout-btn:hover {
-    background-color: #d32f2f;
-}
-
 .hero {
     background-image: url('/static/images/news-background.jpg');
     background-size: cover;
@@ -96,27 +43,280 @@ nav ul li a:hover {
     font-size: 1.5rem;
 }
 
-footer {
-    background-color: black;
-    color: white;
-    padding: 2rem 0;
-    margin-top: 20px;
+.section-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
 }
 
-.footer-content {
+.notice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.notice-grid-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
 }
 
-.footer-section {
+.notice-grid-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+}
+
+.notice-grid-item h3 {
+    margin: 1rem 0;
+    font-size: 1.2em;
+}
+
+.notice-grid-item h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+.notice-grid-item h3 a:hover,
+.notice-grid-item h3 a:visited {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.notice-content {
+    flex-grow: 1;
     margin-bottom: 1rem;
 }
 
+.notice-date {
+    text-align: right;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.pagination a, .pagination span {
+    margin: 0 1rem;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.pagination a {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.pagination a:hover:not(.disabled) {
+    background-color: #f0f0f0;
+}
+
+.pagination a.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    font-weight: bold;
+}
+
+.notice-detail .notice-grid-item {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+    .notice-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .notice-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+/* Navbar styles */
+header {
+  background-color: black;
+  color: white;
+  padding: 1rem;
+  margin-bottom: 20px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+}
+
+nav ul li {
+  margin-left: 1rem;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Footer styles */
+footer {
+  background-color: black;
+  color: white;
+  padding: 2rem 0;
+  margin-top: 20px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.footer-section {
+  margin-bottom: 1rem;
+}
+
 .footer-bottom {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #444;
+}
+
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+    }
+
+    nav ul {
+        margin-top: 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* news_item.html을 위한 새로운 스타일 추가 */
+.notice-content-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 100px;
+}
+
+.notice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.notice-title {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.notice-date {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.notice-image {
+  width: 100%;
+  max-height: 440px;
+  object-fit: cover;
+  margin-bottom: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.notice-content {
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* 링크 스타일 수정 */
+.notice-grid-item h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+.notice-grid-item h3 a:hover,
+.notice-grid-item h3 a:visited {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* 뒤로 가기 버튼 스타일 */
+.back-button-container {
     text-align: center;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #444;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
 }
 

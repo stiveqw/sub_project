@@ -1,29 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}뉴스 메인 페이지{% endblock %}
+{% block title %}공지사항 메인 페이지{% endblock %}
 
 {% block hero %}
 <section class="hero">
-    <h1>University News</h1>
-    <p>Stay updated with the latest happenings in our university</p>
+    <h1>University Notices</h1>
+    <p>Stay updated with the latest announcements from our university</p>
 </section>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .notice-grid-item h3 a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .notice-grid-item h3 a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="news-main">
-    <h2>최신 뉴스</h2>
-    <div id="news-list">
-        <!-- 뉴스 항목들이 여기에 동적으로 추가될 것입니다 -->
+<section class="notice-list">
+    <h2 class="section-title">공지사항</h2>
+    <div class="grid notice-grid" id="notice-list">
+        {% for notice in notices %}
+        <div class="notice-item notice-grid-item">
+            <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="{{ notice.title }}">
+            <h3><a href="{{ url_for('notice.news_item', notice_id=notice.id) }}">{{ notice.title }}</a></h3>
+            <p class="notice-content">{{ notice.content|truncate(100) }}</p>
+            <p class="notice-date">{{ notice.date.strftime('%Y-%m-%d') }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="pagination">
+        <a href="#" id="prevPage">&lt;</a>
+        <span id="currentPage">1</span>
+        <a href="#" id="nextPage">&gt;</a>
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 여기에 뉴스를 불러오고 표시하는 JavaScript 코드를 추가할 수 있습니다
-        // 예: fetch('/api/news').then(...)
-    });
-</script>
+<script src="{{ url_for('static', filename='js/notice_main.js') }}"></script>
 {% endblock %}
 
