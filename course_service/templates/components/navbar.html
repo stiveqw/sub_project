@@ -1,0 +1,15 @@
+<header>
+    <nav>
+        <div class="logo">University Services</div>
+        <ul>
+            <li><a href="{{ url_for('course.redirect_to_main') }}">Home</a></li>
+            <li><a href="{{ url_for('course.redirect_to_festival') }}">Festival</a></li>
+            <li><a href="{{ url_for('course.redirect_to_news') }}">News</a></li>
+            <li><a href="{{ url_for('course.course_registration') }}">Course registration</a></li>
+            <li>
+                <a href="{{ url_for('course.logout') }}" class="logout-btn">Logout</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+

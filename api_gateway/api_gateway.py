@@ -1,25 +1,30 @@
 import logging
+import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, redirect
 import requests
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, verify_jwt_in_request
+from config import Config
+
+load_dotenv()
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # JWT 설정
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # 실제 프로덕션에서는 안전한 비밀키를 사용해야 합니다
+app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
 jwt = JWTManager(app)
 
 SERVICES = {
-    'login': 'http://localhost:5006',
-    'course': 'http://localhost:5001',
-    'festival': 'http://localhost:5002',
-    'notice': 'http://localhost:5004',
-    'error': 'http://localhost:5005',
-    'main': 'http://localhost:5003'
+    'login': os.getenv('LOGIN_SERVICE_URL', 'http://localhost:5006'),
+    'course': os.getenv('COURSE_SERVICE_URL', 'http://localhost:5001'),
+    'festival': os.getenv('FESTIVAL_SERVICE_URL', 'http://localhost:5002'),
+    'notice': os.getenv('NOTICE_SERVICE_URL', 'http://localhost:5004'),
+    'main': os.getenv('MAIN_SERVICE_URL', 'http://localhost:5003')
 }
 
 @app.route('/')
@@ -38,7 +43,7 @@ def proxy(service, path):
     if service not in SERVICES:
         return jsonify({"error": "Service not found"}), 404
 
-    if service not in ['login', 'error']:
+    if service not in ['login']:
         try:
             verify_jwt_in_request()
             logger.debug(f"JWT verified for service: {service}")
@@ -67,7 +72,7 @@ def proxy(service, path):
 @app.errorhandler(422)
 def unauthorized(error):
     logger.error(f"Unauthorized access: {str(error)}")
-    return redirect(SERVICES['login'] + '/login')
+    return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": SERVICES['login'] + '/login'}), 401
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

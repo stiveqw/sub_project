@@ -11,66 +11,77 @@ flask-microservices/
 │   ├── .env
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── login_service.py
 │   ├── config.py
-│   └── models.py
+│   ├── models.py
+│   ├── login_service.py
+│   ├── templates/
+│   │   ├── login.html
+│   │   └── register.html
+│   └── static/
+│       ├── css/
+│       │   └── style.css
+│       └── js/
+│           ├── login.js
+│           └── register.js
 │
 ├── course_service/
 │   ├── .env
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── config.py
-│   ├── course_service.py
-│   └── models.py
+│   ├── models.py
+│   └── course_service.py
 │
 ├── festival_service/
-├── __pycache__
-│   └── config.cpython-312.pyc
-├── __init__.py
-├── festival_service.py
-├── config.py
-├── requirements.txt
-├── Dockerfile
-├── router.py 
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   ├── images/
-│   │   └── .gitkeep
-│   └── js/
-│       ├── main.js
-│       └── apply.js
-├── templates/
-│   ├── components/
-│   │   ├── navbar.html
-│   │   └── footer.html
-│   ├── base.html
-│   ├── festival_main.html
-│   ├── festival_apply.html
-│   ├── eroor.html
-│   └── about.html
-├── reservations.json
-├── seat_counts.json
+│   ├── .env
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── config.py
+│   ├── models.py
+│   ├── festival_service.py
+│   ├── templates/
+│   │   ├── festival_main.html
+│   │   └── festival_apply.html
+│   └── static/
+│       ├── css/
+│       │   └── style.css
+│       └── js/
+│           ├── main.js
+│           └── apply.js
 │
 ├── main_service/
+│   ├── .env
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   ├── main_service.py
 │   ├── config.py
-│   └── models.py
+│   ├── models.py
+│   ├── main_service.py
+│   ├── templates/
+│   │   └── index.html
+│   └── static/
+│       ├── css/
+│       │   └── style.css
+│       └── js/
+│           └── main.js
 │
 ├── notice_service/
+│   ├── .env
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── config.py
+│   ├── models.py
 │   ├── notice_service.py
-│   └── models.py
+│   └── templates/
+│       └── news_main.html
 │
-├── mysql
+│
 ├── nginx/
 │   └── nginx.conf
 │
-└── docker-compose.yml
+├── init.sql
+├── requirements.txt
+├── docker-compose.yml
+└── .env
 
 project-database-image/
 │
