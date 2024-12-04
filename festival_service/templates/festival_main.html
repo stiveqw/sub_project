@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}축제 메인 페이지{% endblock %}
+
+{% block hero %}
+<section class="hero">
+<h1>Welcome to Our Festivals</h1>
+<p>Discover amazing events and create unforgettable memories</p>
+</section>
+{% endblock %}
+
+{% block content %}
+{% if request.args.get('error') %}
+<div class="error-message">
+  {{ request.args.get('error') }}
+</div>
+{% endif %}
+
+{% set festival_images = get_festival_images() %}
+<section class="festival-list">
+<h2 class="section-title">Festival List</h2>
+<div class="grid festival-grid" id="festival-list">
+{% for festival in festivals %}
+<div class="festival-item festival-grid-item">
+  <img src="{{ url_for('static', filename='images/festival_' ~ festival.id ~ '.jpg') if 'festival_' ~ festival.id ~ '.jpg' in festival_images else url_for('static', filename='images/default.jpg') }}" alt="{{ festival.title }}">
+  <h3>{{ festival.title }}</h3>
+  <p>Date: {{ festival.date.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p>Capacity: {{ festival.capacity }}</p>
+  <a href="{{ url_for('festival.apply', festival_id=festival.id) }}" class="apply-button">Apply Now</a>
+</div>
+{% endfor %}
+</div>
+<div class="pagination">
+{% if page > 1 %}
+<a href="{{ url_for('festival.home', page=page-1) }}">&lt;</a>
+{% endif %}
+{% for p in range(1, total_pages + 1) %}
+{% if p == page %}
+  <span class="current-page">{{ p }}</span>
+{% else %}
+  <a href="{{ url_for('festival.home', page=p) }}">{{ p }}</a>
+{% endif %}
+{% endfor %}
+{% if page < total_pages %}
+<a href="{{ url_for('festival.home', page=page+1) }}">&gt;</a>
+{% endif %}
+</div>
+</section>
+{% endblock %}
+

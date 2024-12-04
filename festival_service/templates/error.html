@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code }} - 에러 발생{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <h1 class="error-title">죄송합니다</h1>
+    <h2 class="error-code">{{ error_code }}</h2>
+    <p class="error-message">{{ error_message }}</p>
+    <a href="{{ url_for('home') }}" class="error-home-link">홈으로 돌아가기</a>
+</div>
+{% endblock %}
+
