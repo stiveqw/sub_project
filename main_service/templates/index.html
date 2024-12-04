@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Service</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'components/navbar.html' %}
+    
+    <section class="hero">
+        <h1>Welcome to Our University Services</h1>
+        <p>Discover amazing opportunities and resources</p>
+    </section>
+
+    <main>
+        <h2>Main Service</h2>
+        <p>This is the main page of our university services.</p>
+    </main>
+
+    {% include 'components/footer.html' %}
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+

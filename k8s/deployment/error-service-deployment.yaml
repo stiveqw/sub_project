@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: error-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: error-service
+  template:
+    metadata:
+      labels:
+        app: error-service
+    spec:
+      containers:
+      - name: error-service
+        image: wnahd000/error-service:latest
+        ports:
+        - containerPort: 5005
+        env:
+        - name: ERROR_SERVICE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: error-service-secret
+              key: secret-key
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: error-service-secret
+              key: jwt-secret-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: error-service
+spec:
+  selector:
+    app: error-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5005
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: error-service-secret
+type: Opaque
+stringData:
+  secret-key: your_error_service_secret_key_here
+  jwt-secret-key: your_jwt_secret_key_here
+

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main-service
+  template:
+    metadata:
+      labels:
+        app: main-service
+    spec:
+      containers:
+      - name: main-service
+        image: wnahd000/main-service:latest
+        ports:
+        - containerPort: 5003
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: DB_NAME
+          value: main_db
+        - name: MAIN_SERVICE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: main-service-secret
+              key: secret-key
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: main-service-secret
+              key: jwt-secret-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: main-service
+spec:
+  selector:
+    app: main-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5003
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: main-service-secret
+type: Opaque
+stringData:
+  secret-key: your_main_service_secret_key_here
+  jwt-secret-key: your_jwt_secret_key_here
+

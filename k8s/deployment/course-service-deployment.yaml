@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: course-service
+  template:
+    metadata:
+      labels:
+        app: course-service
+    spec:
+      containers:
+      - name: course-service
+        image: wnahd000/course-service:latest
+        ports:
+        - containerPort: 5001
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        - name: DB_NAME
+          value: course_db
+        - name: COURSE_SERVICE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: course-service-secret
+              key: secret-key
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: course-service-secret
+              key: jwt-secret-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: course-service
+spec:
+  selector:
+    app: course-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5001
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: course-service-secret
+type: Opaque
+stringData:
+  secret-key: your_course_service_secret_key_here
+  jwt-secret-key: your_jwt_secret_key_here
+
