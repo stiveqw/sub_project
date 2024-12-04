@@ -25,3 +25,4 @@ COPY . .
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5004", "notice_service:app"]
 
+
