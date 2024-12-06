@@ -9,34 +9,45 @@
 </section>
 
 <section class="festival-application">
-    <h2>Festival Application</h2>
-    <div class="grid">
+    <h2 class="section-title">Festival Application</h2>
+    <div class="application-container">
         <div class="festival-info">
-            <img src="{{ url_for('static', filename='images/festival_' ~ festival.id ~ '.jpg') }}" alt="{{ festival.title }}">
+            <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="{{ festival.title }}">
             <h3 id="festivalTitle">{{ festival.title }}</h3>
             <p id="festivalDescription">{{ festival.description }}</p>
             <p>Date: <span id="festivalDate">{{ festival.date.strftime('%Y-%m-%d %H:%M') }}</span></p>
-            <p>Capacity: <span id="festivalCapacity">{{ festival.capacity }}</span></p>
+            <p>좌석현황: <span id="festivalCapacity">{{ total_reservations }}/{{ festival.total_seats }}</span></p>
         </div>
         <div class="seat-selection">
-            <h3>좌석 선택 <span id="seatInfo" class="seat-info"></span></h3>
-            <div class="seat-grid" id="seatGrid"></div>
-            <div class="button-container">
-                <button id="applyButton" disabled>신청하기</button>
+            <h3>좌석 선택</h3>
+            <p id="seatInfo" class="seat-info"></p>
+            <div class="seat-selection-content">
+                <div class="seat-grid-container">
+                    <div class="seat-grid" id="seatGrid"></div>
+                </div>
+                <div class="button-container">
+                    <button id="applyButton" disabled>신청하기</button>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <div class="return-button-container">
-    <a href="{{ url_for('home') }}" class="return-button">축제 페이지로 돌아가기</a>
+    <a href="{{ url_for('festival.home') }}" class="return-button">축제 페이지로 돌아가기</a>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/apply.js') }}"></script>
 <script>
-    const festivalId = {{ festival.id }};
+  window.festivalData = {
+      festivalKey: '{{ festival.festival_key }}',
+      festivalTotalSeats: JSON.parse('{{ festival.total_seats }}'),
+      reservedSeats: JSON.parse('{{ reserved_seats|tojson|safe }}'),
+      isAlreadyReserved: JSON.parse('{{ is_already_reserved|tojson|safe }}')
+  };
+  console.log('Festival Data:', window.festivalData);
 </script>
+<script src="{{ url_for('static', filename='js/apply.js') }}"></script>
 {% endblock %}
 

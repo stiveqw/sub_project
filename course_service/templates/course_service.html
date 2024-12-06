@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Course Service{% endblock %}
+
+{% block hero %}
+<section class="hero">
+  <div class="hero-content">
+    <h1>Welcome to Course Service</h1>
+    <p>Manage your courses and registrations with ease</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Course List</h1>
+    
+    <div class="course-chart">
+        <table id="courseTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Course Name</th>
+                    <th>Professor</th>
+                    <th>Max Students</th>
+                    <th>Department</th>
+                    <th>Year</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody id="courseTableBody">
+                <!-- Course data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="pagination">
+        <!-- Pagination will be inserted here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/course_service.js') }}"></script>
+{% endblock %}
+
