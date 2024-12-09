@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -20,13 +19,15 @@ from gunicorn.http.errors import (
     InvalidProxyLine, InvalidRequestLine,
     InvalidRequestMethod, InvalidSchemeHeaders,
     LimitRequestHeaders, LimitRequestLine,
+    UnsupportedTransferCoding,
+    ConfigurationProblem, ObsoleteFolding,
 )
 from gunicorn.http.wsgi import Response, default_environ
 from gunicorn.reloader import reloader_engines
 from gunicorn.workers.workertmp import WorkerTmp
 
 
-class Worker(object):
+class Worker:
 
     SIGNALS = [getattr(signal, "SIG%s" % x) for x in (
         "ABRT HUP QUIT INT TERM USR1 USR2 WINCH CHLD".split()
@@ -210,7 +211,8 @@ class Worker(object):
             InvalidHTTPVersion, InvalidHeader, InvalidHeaderName,
             LimitRequestLine, LimitRequestHeaders,
             InvalidProxyLine, ForbiddenProxyRequest,
-            InvalidSchemeHeaders,
+            InvalidSchemeHeaders, UnsupportedTransferCoding,
+            ConfigurationProblem, ObsoleteFolding,
             SSLError,
         )):
 
@@ -223,6 +225,14 @@ class Worker(object):
                 mesg = "Invalid Method '%s'" % str(exc)
             elif isinstance(exc, InvalidHTTPVersion):
                 mesg = "Invalid HTTP Version '%s'" % str(exc)
+            elif isinstance(exc, UnsupportedTransferCoding):
+                mesg = "%s" % str(exc)
+                status_int = 501
+            elif isinstance(exc, ConfigurationProblem):
+                mesg = "%s" % str(exc)
+                status_int = 500
+            elif isinstance(exc, ObsoleteFolding):
+                mesg = "%s" % str(exc)
             elif isinstance(exc, (InvalidHeaderName, InvalidHeader,)):
                 mesg = "%s" % str(exc)
                 if not req and hasattr(exc, "req"):
@@ -230,7 +240,9 @@ class Worker(object):
             elif isinstance(exc, LimitRequestLine):
                 mesg = "%s" % str(exc)
             elif isinstance(exc, LimitRequestHeaders):
+                reason = "Request Header Fields Too Large"
                 mesg = "Error parsing headers: '%s'" % str(exc)
+                status_int = 431
             elif isinstance(exc, InvalidProxyLine):
                 mesg = "'%s'" % str(exc)
             elif isinstance(exc, ForbiddenProxyRequest):
@@ -245,10 +257,12 @@ class Worker(object):
                 status_int = 403
 
             msg = "Invalid request from ip={ip}: {error}"
-            self.log.debug(msg.format(ip=addr[0], error=str(exc)))
+            self.log.warning(msg.format(ip=addr[0], error=str(exc)))
         else:
             if hasattr(req, "uri"):
                 self.log.exception("Error handling request %s", req.uri)
+            else:
+                self.log.exception("Error handling request (no URI read)")
             status_int = 500
             reason = "Internal Server Error"
             mesg = ""

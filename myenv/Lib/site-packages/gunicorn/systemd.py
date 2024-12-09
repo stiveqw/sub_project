@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -58,7 +57,6 @@ def sd_notify(state, logger, unset_environment=False):
     child processes.
     """
 
-
     addr = os.environ.get('NOTIFY_SOCKET')
     if addr is None:
         # not run in a service, just a noop
@@ -69,7 +67,7 @@ def sd_notify(state, logger, unset_environment=False):
             addr = '\0' + addr[1:]
         sock.connect(addr)
         sock.sendall(state.encode('utf-8'))
-    except:
+    except Exception:
         logger.debug("Exception while invoking sd_notify()", exc_info=True)
     finally:
         if unset_environment:

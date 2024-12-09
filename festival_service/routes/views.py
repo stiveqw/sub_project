@@ -142,4 +142,3 @@ def logout():
 @festival.route('/login')
 def login():
     return redirect('http://localhost:5006/login')
-

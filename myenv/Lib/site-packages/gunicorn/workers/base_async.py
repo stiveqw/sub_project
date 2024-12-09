@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -9,10 +8,10 @@ import socket
 import ssl
 import sys
 
-import gunicorn.http as http
-import gunicorn.http.wsgi as wsgi
-import gunicorn.util as util
-import gunicorn.workers.base as base
+from gunicorn import http
+from gunicorn.http import wsgi
+from gunicorn import util
+from gunicorn.workers import base
 
 ALREADY_HANDLED = object()
 
@@ -60,7 +59,7 @@ class AsyncWorker(base.Worker):
             except ssl.SSLError:
                 # pass to next try-except level
                 util.reraise(*sys.exc_info())
-            except EnvironmentError:
+            except OSError:
                 # pass to next try-except level
                 util.reraise(*sys.exc_info())
             except Exception as e:
@@ -72,7 +71,7 @@ class AsyncWorker(base.Worker):
             else:
                 self.log.debug("Error processing SSL request.")
                 self.handle_error(req, client, addr, e)
-        except EnvironmentError as e:
+        except OSError as e:
             if e.errno not in (errno.EPIPE, errno.ECONNRESET, errno.ENOTCONN):
                 self.log.exception("Socket error processing request.")
             else:
@@ -82,7 +81,7 @@ class AsyncWorker(base.Worker):
                     self.log.debug("Ignoring socket not connected")
                 else:
                     self.log.debug("Ignoring EPIPE")
-        except Exception as e:
+        except BaseException as e:
             self.handle_error(req, client, addr, e)
         finally:
             util.close(client)
@@ -115,16 +114,16 @@ class AsyncWorker(base.Worker):
                     for item in respiter:
                         resp.write(item)
                 resp.close()
+            finally:
                 request_time = datetime.now() - request_start
                 self.log.access(resp, req, environ, request_time)
-            finally:
                 if hasattr(respiter, "close"):
                     respiter.close()
             if resp.should_close():
                 raise StopIteration()
         except StopIteration:
             raise
-        except EnvironmentError:
+        except OSError:
             # If the original exception was a socket.error we delegate
             # handling it to the caller (where handle() might ignore it)
             util.reraise(*sys.exc_info())
@@ -136,7 +135,7 @@ class AsyncWorker(base.Worker):
                 try:
                     sock.shutdown(socket.SHUT_RDWR)
                     sock.close()
-                except EnvironmentError:
+                except OSError:
                     pass
                 raise StopIteration()
             raise

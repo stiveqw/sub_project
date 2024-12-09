@@ -13,34 +13,101 @@
 
 {% block content %}
 <div class="container">
-    <h1>Course List</h1>
-    
-    <div class="course-chart">
-        <table id="courseTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Course Name</th>
-                    <th>Professor</th>
-                    <th>Max Students</th>
-                    <th>Department</th>
-                    <th>Year</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody id="courseTableBody">
-                <!-- Course data will be inserted here -->
-            </tbody>
-        </table>
-    </div>
+  <h1>Course List</h1>
+  
+  <table id="searchTable" class="search-table">
+    <tr>
+      <td>키워드</td>
+      <td>
+        <select id="creditsDropdown" class="keyword-dropdown">
+          <option value="">Select Credits</option>
+          <!-- Options will be dynamically populated by JavaScript -->
+        </select>
+        <select id="departmentDropdown" class="keyword-dropdown">
+          <option value="">Select Department</option>
+          <!-- Options will be dynamically populated by JavaScript -->
+        </select>
+        <button id="keywordSearchBtn" class="search-button">Search</button>
+      </td>
+    </tr>
+    <tr>
+      <td>Course Name</td>
+      <td>
+        <input type="text" id="courseNameInput" class="course-name-input" placeholder="Enter course name">
+        <button id="courseNameSearchBtn" class="search-button">Search</button>
+      </td>
+    </tr>
+  </table>
 
-    <div class="pagination" id="pagination">
-        <!-- Pagination will be inserted here -->
-    </div>
+  <table id="courseTable" class="course-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Course Name</th>
+        <th>Professor</th>
+        <th>Max Students</th>
+        <th>Current Students</th>
+        <th>Credits</th>
+        <th>Department</th>
+        <th>Year</th>
+        <th>Keep</th>
+        <th>Apply</th>
+      </tr>
+    </thead>
+    <tbody id="courseTableBody">
+      <!-- Course data will be inserted here by JavaScript -->
+    </tbody>
+  </table>
+
+  <h1>Course Keep</h1>
+
+  <table id="courseKeepTable" class="course-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Course Name</th>
+        <th>Professor</th>
+        <th>Max Students</th>
+        <th>Current Students</th>
+        <th>Credits</th>
+        <th>Department</th>
+        <th>Year</th>
+        <th>Keep</th>
+        <th>Apply</th>
+      </tr>
+    </thead>
+    <tbody id="courseKeepTableBody">
+      <!-- Kept course data will be inserted here -->
+    </tbody>
+  </table>
+
+  <h1>Applied Courses</h1>
+
+  <div class="course-chart">
+  <table id="appliedCoursesTable" class="course-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Course Name</th>
+        <th>Professor</th>
+        <th>Credits</th>
+        <th>Department</th>
+        <th>Year</th>
+        <th>Status</th>
+        <th>Cancel</th>
+      </tr>
+    </thead>
+    <tbody id="appliedCoursesTableBody">
+      <!-- Applied course data will be inserted here by JavaScript -->
+    </tbody>
+  </table>
+</div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
+
 <script src="{{ url_for('static', filename='js/course_service.js') }}"></script>
 {% endblock %}
 

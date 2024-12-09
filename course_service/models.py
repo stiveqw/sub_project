@@ -33,4 +33,3 @@ class Student(db.Model):
     phone_number = db.Column(db.String(15), nullable=False)
     department = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-

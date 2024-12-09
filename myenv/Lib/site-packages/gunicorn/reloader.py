@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -17,7 +16,7 @@ COMPILED_EXT_RE = re.compile(r'py[co]$')
 class Reloader(threading.Thread):
     def __init__(self, extra_files=None, interval=1, callback=None):
         super().__init__()
-        self.setDaemon(True)
+        self.daemon = True
         self._extra_files = set(extra_files or ())
         self._interval = interval
         self._callback = callback
@@ -74,7 +73,7 @@ if has_inotify:
 
         def __init__(self, extra_files=None, callback=None):
             super().__init__()
-            self.setDaemon(True)
+            self.daemon = True
             self._callback = callback
             self._dirs = set()
             self._watcher = Inotify()
@@ -117,8 +116,8 @@ if has_inotify:
 
 else:
 
-    class InotifyReloader(object):
-        def __init__(self, callback=None):
+    class InotifyReloader:
+        def __init__(self, extra_files=None, callback=None):
             raise ImportError('You must have the inotify module installed to '
                               'use the inotify reloader')
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -22,7 +21,10 @@ import time
 import traceback
 import warnings
 
-import pkg_resources
+try:
+    import importlib.metadata as importlib_metadata
+except (ModuleNotFoundError, ImportError):
+    import importlib_metadata
 
 from gunicorn.errors import AppImportError
 from gunicorn.workers import SUPPORTED_WORKERS
@@ -54,6 +56,15 @@ except ImportError:
         pass
 
 
+def load_entry_point(distribution, group, name):
+    dist_obj = importlib_metadata.distribution(distribution)
+    eps = [ep for ep in dist_obj.entry_points
+           if ep.group == group and ep.name == name]
+    if not eps:
+        raise ImportError("Entry point %r not found" % ((group, name),))
+    return eps[0].load()
+
+
 def load_class(uri, default="gunicorn.workers.sync.SyncWorker",
                section="gunicorn.workers"):
     if inspect.isclass(uri):
@@ -68,7 +79,7 @@ def load_class(uri, default="gunicorn.workers.sync.SyncWorker",
             name = default
 
         try:
-            return pkg_resources.load_entry_point(dist, section, name)
+            return load_entry_point(dist, section, name)
         except Exception:
             exc = traceback.format_exc()
             msg = "class uri %r invalid or not found: \n\n[%s]"
@@ -85,7 +96,7 @@ def load_class(uri, default="gunicorn.workers.sync.SyncWorker",
                     break
 
                 try:
-                    return pkg_resources.load_entry_point(
+                    return load_entry_point(
                         "gunicorn", section, uri
                     )
                 except Exception:
@@ -97,7 +108,7 @@ def load_class(uri, default="gunicorn.workers.sync.SyncWorker",
 
         try:
             mod = importlib.import_module('.'.join(components))
-        except:
+        except Exception:
             exc = traceback.format_exc()
             msg = "class uri %r invalid or not found: \n\n[%s]"
             raise RuntimeError(msg % (uri, exc))
@@ -145,7 +156,7 @@ def set_owner_process(uid, gid, initgroups=False):
         elif gid != os.getgid():
             os.setgid(gid)
 
-    if uid:
+    if uid and uid != os.getuid():
         os.setuid(uid)
 
 
@@ -205,7 +216,7 @@ def unlink(filename):
 def is_ipv6(addr):
     try:
         socket.inet_pton(socket.AF_INET6, addr)
-    except socket.error:  # not a valid address
+    except OSError:  # not a valid address
         return False
     except ValueError:  # ipv6 not supported on this platform
         return False
@@ -257,7 +268,7 @@ def set_non_blocking(fd):
 def close(sock):
     try:
         sock.close()
-    except socket.error:
+    except OSError:
         pass
 
 
@@ -460,7 +471,7 @@ def is_hoppish(header):
 def daemonize(enable_stdio_inheritance=False):
     """\
     Standard daemonization of a process.
-    http://www.svbug.com/documentation/comp.unix.programmer-FAQ/faq_2.html#SEC16
+    http://www.faqs.org/faqs/unix-faq/programmer/faq/ section 1.7
     """
     if 'GUNICORN_FD' not in os.environ:
         if os.fork():
@@ -486,7 +497,10 @@ def daemonize(enable_stdio_inheritance=False):
             closerange(0, 3)
 
             fd_null = os.open(REDIRECT_TO, os.O_RDWR)
+            # PEP 446, make fd for /dev/null inheritable
+            os.set_inheritable(fd_null, True)
 
+            # expect fd_null to be always 0 here, but in-case not ...
             if fd_null != 0:
                 os.dup2(fd_null, 0)
 
@@ -547,12 +561,12 @@ def seed():
         random.seed('%s.%s' % (time.time(), os.getpid()))
 
 
-def check_is_writeable(path):
+def check_is_writable(path):
     try:
-        f = open(path, 'a')
-    except IOError as e:
+        with open(path, 'a') as f:
+            f.close()
+    except OSError as e:
         raise RuntimeError("Error: '%s' isn't writable [%r]" % (path, e))
-    f.close()
 
 
 def to_bytestring(value, encoding="utf8"):
@@ -572,7 +586,7 @@ def has_fileno(obj):
     # check BytesIO case and maybe others
     try:
         obj.fileno()
-    except (AttributeError, IOError, io.UnsupportedOperation):
+    except (AttributeError, OSError, io.UnsupportedOperation):
         return False
 
     return True

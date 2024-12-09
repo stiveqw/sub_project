@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -
 #
 # This file is part of gunicorn released under the MIT license.
 # See the NOTICE for more information.
@@ -11,7 +10,7 @@
 # closed.
 # pylint: disable=no-else-break
 
-import concurrent.futures as futures
+from concurrent import futures
 import errno
 import os
 import selectors
@@ -27,10 +26,11 @@ from threading import RLock
 from . import base
 from .. import http
 from .. import util
+from .. import sock
 from ..http import wsgi
 
 
-class TConn(object):
+class TConn:
 
     def __init__(self, cfg, sock, client, server):
         self.cfg = cfg
@@ -40,17 +40,19 @@ class TConn(object):
 
         self.timeout = None
         self.parser = None
+        self.initialized = False
 
         # set the socket to non blocking
         self.sock.setblocking(False)
 
     def init(self):
+        self.initialized = True
         self.sock.setblocking(True)
+
         if self.parser is None:
             # wrap the socket if needed
             if self.cfg.is_ssl:
-                self.sock = ssl.wrap_socket(self.sock, server_side=True,
-                                            **self.cfg.ssl_options)
+                self.sock = sock.ssl_wrap_socket(self.sock, self.cfg)
 
             # initialize the parser
             self.parser = http.RequestParser(self.cfg, self.sock, self.client)
@@ -119,24 +121,29 @@ class ThreadWorker(base.Worker):
             sock, client = listener.accept()
             # initialize the connection object
             conn = TConn(self.cfg, sock, client, server)
+
             self.nr_conns += 1
-            # enqueue the job
-            self.enqueue_req(conn)
-        except EnvironmentError as e:
+            # wait until socket is readable
+            with self._lock:
+                self.poller.register(conn.sock, selectors.EVENT_READ,
+                                     partial(self.on_client_socket_readable, conn))
+        except OSError as e:
             if e.errno not in (errno.EAGAIN, errno.ECONNABORTED,
                                errno.EWOULDBLOCK):
                 raise
 
-    def reuse_connection(self, conn, client):
+    def on_client_socket_readable(self, conn, client):
         with self._lock:
             # unregister the client from the poller
             self.poller.unregister(client)
-            # remove the connection from keepalive
-            try:
-                self._keep.remove(conn)
-            except ValueError:
-                # race condition
-                return
+
+            if conn.initialized:
+                # remove the connection from keepalive
+                try:
+                    self._keep.remove(conn)
+                except ValueError:
+                    # race condition
+                    return
 
         # submit the connection to a worker
         self.enqueue_req(conn)
@@ -163,11 +170,14 @@ class ThreadWorker(base.Worker):
                 with self._lock:
                     try:
                         self.poller.unregister(conn.sock)
-                    except EnvironmentError as e:
+                    except OSError as e:
                         if e.errno != errno.EBADF:
                             raise
                     except KeyError:
                         # already removed by the system, continue
+                        pass
+                    except ValueError:
+                        # already removed by the system continue
                         pass
 
                 # close the socket
@@ -249,7 +259,7 @@ class ThreadWorker(base.Worker):
 
                     # add the socket to the event loop
                     self.poller.register(conn.sock, selectors.EVENT_READ,
-                                         partial(self.reuse_connection, conn))
+                                         partial(self.on_client_socket_readable, conn))
             else:
                 self.nr_conns -= 1
                 conn.close()
@@ -284,7 +294,7 @@ class ThreadWorker(base.Worker):
                 self.log.debug("Error processing SSL request.")
                 self.handle_error(req, conn.sock, conn.client, e)
 
-        except EnvironmentError as e:
+        except OSError as e:
             if e.errno not in (errno.EPIPE, errno.ECONNRESET, errno.ENOTCONN):
                 self.log.exception("Socket error processing request.")
             else:
@@ -329,16 +339,16 @@ class ThreadWorker(base.Worker):
                         resp.write(item)
 
                 resp.close()
+            finally:
                 request_time = datetime.now() - request_start
                 self.log.access(resp, req, environ, request_time)
-            finally:
                 if hasattr(respiter, "close"):
                     respiter.close()
 
             if resp.should_close():
                 self.log.debug("Closing connection.")
                 return False
-        except EnvironmentError:
+        except OSError:
             # pass to next try-except level
             util.reraise(*sys.exc_info())
         except Exception:
@@ -349,7 +359,7 @@ class ThreadWorker(base.Worker):
                 try:
                     conn.sock.shutdown(socket.SHUT_RDWR)
                     conn.sock.close()
-                except EnvironmentError:
+                except OSError:
                     pass
                 raise StopIteration()
             raise
