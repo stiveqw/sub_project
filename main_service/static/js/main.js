@@ -88,26 +88,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 로그아웃 버튼 이벤트 리스너
-    const logoutButton = document.querySelector('.logout-btn');
+    const logoutButton = document.getElementById('logoutBtn');
     if (logoutButton) {
         logoutButton.addEventListener('click', async function(e) {
             e.preventDefault();
             try {
-                const data = await fetchWithCSRF('/logout', { method: 'POST' });
-                if (data.success) {
-                    window.location.href = '/login';
+                const response = await fetchWithJWT(this.href, { method: 'POST' });
+                if (response.success) {
+                    window.location.href = response.redirect_url;
                 } else {
-                    console.error('Logout failed:', data.message);
+                    console.error('Logout failed:', response.message);
                 }
             } catch (error) {
                 console.error('Logout error:', error);
             }
         });
     }
-
-    // 기타 필요한 이벤트 리스너나 함수를 여기에 추가할 수 있습니다.
-
-    // 15분마다 CSRF 토큰 갱신
-    setInterval(refreshCSRFToken, 15 * 60 * 1000);
 });
+
+   
+    
 

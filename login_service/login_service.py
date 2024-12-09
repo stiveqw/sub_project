@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies, get_csrf_token, get_jwt
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.routing import BuildError
 from config import Config
@@ -21,13 +21,7 @@ jwt = JWTManager(app)
 # JWT 설정 추가
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False  # 개발 환경에서는 False, 프로덕션에서는 True로 설정
-app.config['JWT_COOKIE_CSRF_PROTECT'] = True
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-app.config['JWT_CSRF_IN_COOKIES'] = True
-app.config['JWT_CSRF_METHODS'] = ['POST', 'PUT', 'PATCH', 'DELETE']
-
-def generate_csrf():
-    return 'test_csrf' # 실제로는 JWT에서 csrf 토큰을 생성하는 로직이 필요함.
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -57,18 +51,14 @@ def login():
                 redirect_url = 'http://localhost:5003'  # 메인 서비스의 URL로 직접 리다이렉션
                 app.logger.debug(f"Redirect URL: {redirect_url}")
                 
-                csrf_token = generate_csrf()
                 response = make_response(jsonify({
                     'success': True,
                     'message': '로그인 성공',
-                    'redirect_url': redirect_url,
-                    'csrf_token': csrf_token  # CSRF 토큰을 응답에 포함
+                    'redirect_url': redirect_url
                 }))
                 set_access_cookies(response, access_token)
                 
-                response.set_cookie('csrf_token', csrf_token, secure=False, httponly=False, samesite='Lax', max_age=3600)
-                
-                app.logger.debug("Access token and CSRF token set in cookies")
+                app.logger.debug("Access token set in cookies")
                 
                 return response, 200
             else:
@@ -88,14 +78,45 @@ def login():
 def home():
     return redirect(url_for('login'))
 
-@app.route('/refresh-csrf', methods=['GET'])
-@jwt_required()
-def refresh_csrf():
-    jwt = get_jwt()
-    csrf_token = get_csrf_token(jwt)
-    response = jsonify({'csrf_token': csrf_token})
-    response.set_cookie('csrf_access_token', csrf_token, secure=False, httponly=False, samesite='Lax', max_age=3600)
-    return response
+@app.route('/redirect_to_register')
+def redirect_to_register():
+    return redirect(url_for('register'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        department = request.form.get('department')
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone_number = request.form.get('phone_number')
+        password = request.form.get('password')
+
+        if User.query.filter_by(student_id=student_id).first():
+            return jsonify({"success": False, "message": "이미 등록된 학번입니다."}), 400
+
+        if User.query.filter_by(email=email).first():
+            return jsonify({"success": False, "message": "이미 등록된 이메일입니다."}), 400
+
+        new_user = User(
+            student_id=student_id,
+            department=department,
+            name=name,
+            email=email,
+            phone_number=phone_number,
+            password_hash=generate_password_hash(password)
+        )
+
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify({"success": True, "message": "회원가입이 완료되었습니다."}), 201
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error during registration: {str(e)}")
+            return jsonify({"success": False, "message": "회원가입 중 오류가 발생했습니다."}), 500
+
+    return render_template('register.html')
 
 @app.errorhandler(400)
 def bad_request(error):

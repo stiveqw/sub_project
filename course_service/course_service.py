@@ -15,21 +15,19 @@ app.config.from_object(Config)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 logger = logging.getLogger(__name__)
 
-app.logger.debug('Registered routes:')
-for rule in app.url_map.iter_rules():
-    app.logger.debug(f"{rule.endpoint}: {rule.rule}")
-
+# Initialize extensions
 db.init_app(app)
 jwt = JWTManager(app)
 socketio.init_app(app, cors_allowed_origins="*")
 
+# Register blueprints
 app.register_blueprint(course_blueprint)
 
-# JWT 설정 추가
+# JWT configuration
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config['JWT_COOKIE_SECURE'] = False  # 개발 환경에서는 False, 프로덕션에서는 True로 설정
-app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # CSRF 보호 비활성화
-app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # 개발 환경에서는 'Lax', 프로덕션에서는 'Strict'로 설정
+app.config['JWT_COOKIE_SECURE'] = False  # Set to True in production
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # CSRF protection disabled
+app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # Set to 'Strict' in production
 
 @app.before_request
 def before_request():
@@ -72,5 +70,10 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 if __name__ == '__main__':
+    # Log registered routes
+    app.logger.debug('Registered routes:')
+    for rule in app.url_map.iter_rules():
+        app.logger.debug(f"{rule.endpoint}: {rule.rule}")
+    
     app.run(host='0.0.0.0', port=5001, debug=True)
 

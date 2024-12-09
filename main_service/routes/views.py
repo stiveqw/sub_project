@@ -44,12 +44,16 @@ def news():
 def course_registration():
     return redirect('http://localhost:5001/course_registration')
 
-@main.route('/logout')
+@main.route('/logout', methods=['GET', 'POST'])
 @jwt_required_custom
 def logout():
-    response = make_response(redirect('http://localhost:5006/login'))
+    response = make_response(jsonify({
+        'success': True,
+        'message': '로그아웃 되었습니다.',
+        'redirect_url': url_for('main.login', _external=True)
+    }))
     unset_jwt_cookies(response)
-    return response
+    return response, 200
 
 @main.route('/login')
 def login():

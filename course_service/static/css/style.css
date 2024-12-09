@@ -170,15 +170,15 @@ p {
   
   .search-button {
     padding: 5px 15px;
-    background-color: #007bff;
+    background-color: black;  /* 배경색을 검은색으로 변경 */
     color: white;
     border: none;
     cursor: pointer;
-  }
-  
-  .search-button:hover {
-    background-color: #0056b3;
-  }
+}
+
+.search-button:hover {
+    background-color: #333;  /* hover 시 약간 밝은 검은색으로 변경 */
+}
 
   #courseKeepTable {
     width: 100%;
@@ -463,21 +463,17 @@ footer {
 
 #appliedCoursesTable th, #appliedCoursesTable td {
   padding: 10px;
-  text-align: left;
+  text-align: center;  /* 왼쪽 정렬에서 중앙 정렬로 변경 */
   border-bottom: 1px solid #ddd;
   white-space: nowrap;
 }
 
-#appliedCoursesTable th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-  text-align: center;
-}
-
+/* 다음 선택자를 제거합니다
 #appliedCoursesTable td:first-child {
   text-align: center;
   border-right: 1px solid #ddd;
 }
+*/
 
 #appliedCoursesTable .no-data-row td {
   height: 240px;
@@ -499,5 +495,69 @@ footer {
 
 .cancel-button:hover {
   background-color: #c82333;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.pagination button:hover:not(.active) {
+    background-color: #e9ecef;
+}
+
+.pagination button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.deadline-button {
+    background-color: #dc3545;  /* 빨간색 배경 */
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 15px;
+    cursor: not-allowed;  /* 마우스 커서를 'not-allowed'로 변경 */
+    opacity: 0.65;  /* 약간 투명하게 만들어 비활성화된 것처럼 보이게 함 */
+}
+
+.all-courses-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 15px;  /* 검색 버튼과 동일한 패딩 */
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-left: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.all-courses-button:hover {
+  background-color: #45a049;
+}
+
+.search-button,
+.all-courses-button {
+  height: 32px;  /* 원하는 높이로 조정 가능 */
+  line-height: 1;  /* 텍스트 수직 정렬을 위해 */
+  vertical-align: middle;
 }
 

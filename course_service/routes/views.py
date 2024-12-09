@@ -13,6 +13,58 @@ logger = logging.getLogger(__name__)
 # 메모리에 kept_courses 저장
 kept_courses = {}
 
+@course.route('/api/get_courses', methods=['GET'])
+@jwt_required()
+def get_courses():
+    logger.info(f"Received request for {request.path}")
+    try:
+        # 모든 과목 정보 가져오기
+        courses = Course.query.all()
+        courses_data = [{
+            'id': course.id,
+            'course_key': course.course_key,
+            'course_name': course.course_name,
+            'professor': course.professor,
+            'max_students': course.max_students,
+            'current_students': course.current_students,
+            'credits': course.credits,
+            'department': course.department,
+            'year': course.year
+        } for course in courses]
+
+        # 현재 사용자의 ID 가져오기
+        current_user_id = get_jwt_identity()
+        
+        # 현재 사용자의 신청한 과목 정보 가져오기
+        student = Student.query.filter_by(id=current_user_id).first()
+        if student:
+            applied_courses = db.session.query(Course).join(Registration).filter(
+                Registration.student_id == student.student_id,
+                Registration.status == 'Applied'
+            ).all()
+            
+            applied_courses_data = [{
+                'id': course.id,
+                'course_key': course.course_key,
+                'course_name': course.course_name,
+                'professor': course.professor,
+                'credits': course.credits,
+                'department': course.department,
+                'year': course.year
+            } for course in applied_courses]
+        else:
+            applied_courses_data = []
+        
+        return jsonify({
+            "success": True, 
+            "courses": courses_data,
+            "appliedCourses": applied_courses_data
+        }), 200
+    except Exception as e:
+        logger.error(f"Error in get_courses: {str(e)}")
+        return jsonify({"success": False, "message": "An error occurred while fetching courses"}), 500
+
+
 @course.route('/refresh-csrf', methods=['GET'])
 @jwt_required()
 def refresh_csrf():
@@ -34,19 +86,34 @@ def course_service():
     logger.info(f"Received request for {request.path}")
     return render_template('course_service.html')
 
+@course.route('/api/dropdown_options', methods=['GET'])
+@jwt_required()
+def get_dropdown_options():
+    logger.info(f"Received request for dropdown options")
+    try:
+        credits = db.session.query(Course.credits).distinct().order_by(Course.credits).all()
+        departments = db.session.query(Course.department).distinct().order_by(Course.department).all()
+        
+        return jsonify({
+            "success": True,
+            "credits": [credit[0] for credit in credits],
+            "departments": [dept[0] for dept in departments if dept[0]]  # None 값 제외
+        }), 200
+    except Exception as e:
+        logger.error(f"Error in get_dropdown_options: {str(e)}")
+        return jsonify({"success": False, "message": "An error occurred while fetching dropdown options"}), 500
+
 @course.route('/api/credits')
 @jwt_required()
 def get_credits():
-    logger.info(f"Received request for {request.path}")
-    credits = db.session.query(Course.credits).distinct().order_by(Course.credits).all()
-    return jsonify({'credits': [credit[0] for credit in credits]})
+    logger.info(f"Received request for {request.path}, redirecting to dropdown_options")
+    return redirect(url_for('course.get_dropdown_options'))
 
 @course.route('/api/departments')
 @jwt_required()
 def get_departments():
-    logger.info(f"Received request for {request.path}")
-    departments = db.session.query(Course.department).distinct().order_by(Course.department).all()
-    return jsonify({'departments': [dept[0] for dept in departments]})
+    logger.info(f"Received request for {request.path}, redirecting to dropdown_options")
+    return redirect(url_for('course.get_dropdown_options'))
 
 @course.route('/api/search_courses')
 @jwt_required()
@@ -85,83 +152,102 @@ def search_courses():
         logger.error(f"Error in search_courses: {str(e)}")
         return jsonify({"success": False, "message": "An error occurred while searching courses"}), 500
 
-@course.route('/apply_course', methods=['POST'])
+@course.route('/api/apply_course', methods=['POST'])
 @jwt_required()
 def apply_course():
-    
-    logger.info(f"Received request for {request.path}")
+    data = request.get_json()
+    course_key = data.get('course_key')
+    user_id = get_jwt_identity()  # This gets the user.id from JWT
+
+    logger.info(f"Attempting to apply for course with user_id: {user_id}")
+
     try:
-        data = request.get_json()
-        course_key = data.get('course_key')
-        
-        user_id = get_jwt_identity()
-        
+        # Get the student record using id (which is equivalent to user_id)
         student = Student.query.filter_by(id=user_id).first()
         if not student:
-            return jsonify({"success": False, "message": "Student not found"}), 404
+            logger.warning(f"Student not found for id: {user_id}")
+            return jsonify({"success": False, "message": "학생 정보를 찾을 수 없습니다."}), 404
+
+        student_id = student.student_id  # Get the actual student_id
         
         course = Course.query.filter_by(course_key=course_key).first()
         if not course:
-            return jsonify({"success": False, "message": "Course not found"}), 404
+            logger.warning(f"Course not found: {course_key}")
+            return jsonify({"success": False, "message": "과목을 찾을 수 없습니다."}), 404
+
+        if course.current_students >= course.max_students:
+            logger.warning(f"Course is full: {course_key}")
+            return jsonify({"success": False, "message": "수강 인원이 꽉 찼습니다."}), 400
+
+        existing_registration = Registration.query.filter_by(
+            course_key=course_key, 
+            student_id=student_id
+        ).first()
         
-        applied_count = Registration.query.filter_by(course_key=course.course_key, status='Applied').count()
-        if applied_count >= course.max_students:
-            logger.warning(f"Course {course_key} is full")
-            return jsonify({"success": False, "message": "Course is full"}), 400
-        
-        registration = Registration.query.filter_by(course_key=course.course_key, student_id=student.student_id).first()
-        
-        if registration:
-            if registration.status == 'Applied':
-                logger.warning(f"Student {student.student_id} already applied for course {course_key}")
-                return jsonify({"success": False, "message": "Already applied for this course"}), 400
-            registration.status = 'Applied'
+        if existing_registration:
+            if existing_registration.status == 'Applied':
+                logger.warning(f"Student already registered: {student_id} for course: {course_key}")
+                return jsonify({"success": False, "message": "이미 신청한 과목입니다."}), 400
+            elif existing_registration.status == 'Cancelled':
+                # Update the existing registration to 'Applied'
+                existing_registration.status = 'Applied'
+                db.session.add(existing_registration)
+            else:
+                logger.error(f"Unknown registration status: {existing_registration.status}")
+                return jsonify({"success": False, "message": "알 수 없는 등록 상태입니다."}), 500
         else:
-            registration = Registration(course_key=course.course_key, student_id=student.student_id, status='Applied')
-            db.session.add(registration)
+            # Create a new registration
+            new_registration = Registration(course_key=course_key, student_id=student_id, status='Applied')
+            db.session.add(new_registration)
+        
+        # Increment current_students
+        course.current_students += 1
         
         db.session.commit()
-        logger.info(f"Student {student.student_id} successfully applied for course {course_key}")
-        return jsonify({"success": True, "message": "Successfully applied for the course"})
+        logger.info(f"Successfully applied for course: {course_key} by student: {student_id}")
+        return jsonify({"success": True, "message": "과목 신청이 완료되었습니다."}), 200
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error in apply_course: {str(e)}")
-        return jsonify({"success": False, "message": "An error occurred during course application"}), 500
+        logger.error(f"Error in apply_course: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @course.route('/api/cancel_course', methods=['POST'])
 @jwt_required()
 def cancel_course():
-    logger.info(f"Received request for {request.path}")
+    data = request.get_json()
+    course_key = data.get('course_key')
+    user_id = get_jwt_identity()
+
     try:
-        user_id = get_jwt_identity()
-        logger.debug(f"Cancelling course for user: {user_id}")
-        
+        # Get the student record using id (which is equivalent to user_id)
         student = Student.query.filter_by(id=user_id).first()
-        
         if not student:
-            logger.error(f"Student not found for user ID: {user_id}")
-            return jsonify({"success": False, "message": "Student not found"}), 404
+            return jsonify({"success": False, "message": "학생 정보를 찾을 수 없습니다."}), 404
+
+        student_id = student.student_id  # Get the actual student_id
+
+        registration = Registration.query.filter_by(
+            course_key=course_key, 
+            student_id=student_id
+        ).first()
         
-        course_id = request.json.get('course_id')
-        course = Course.query.get(course_id)
-        
+        if not registration:
+            return jsonify({"success": False, "message": "신청 내역을 찾을 수 없습니다."}), 404
+
+        course = Course.query.filter_by(course_key=course_key).first()
         if not course:
-            logger.error(f"Course not found with ID: {course_id}")
-            return jsonify({"success": False, "message": "Course not found"}), 404
+            return jsonify({"success": False, "message": "과목을 찾을 수 없습니다."}), 404
+
+        db.session.delete(registration)
         
-        registration = Registration.query.filter_by(course_key=course.course_key, student_id=student.student_id).first()
+        # Decrement current_students
+        course.current_students = max(0, course.current_students - 1)
         
-        if not registration or registration.status != 'Applied':
-            logger.warning(f"No active registration found for student {student.student_id} and course {course_id}")
-            return jsonify({"success": False, "message": "No active registration found for this course"}), 400
-        
-        registration.status = 'Cancelled'
         db.session.commit()
-        logger.info(f"Successfully cancelled course {course_id} for student {student.student_id}")
-        return jsonify({"success": True, "message": "Successfully cancelled the course registration"})
+        return jsonify({"success": True, "message": "과목 취소가 완료되었습니다."}), 200
     except Exception as e:
-        logger.error(f"Error in cancel_course: {str(e)}")
-        return jsonify({"success": False, "message": "An error occurred while cancelling the course"}), 500
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @course.route('/api/get_applied_courses', methods=['GET'])
 @jwt_required()
