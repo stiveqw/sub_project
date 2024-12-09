@@ -16,7 +16,7 @@
             <h3 id="festivalTitle">{{ festival.title }}</h3>
             <p id="festivalDescription">{{ festival.description }}</p>
             <p>Date: <span id="festivalDate">{{ festival.date.strftime('%Y-%m-%d %H:%M') }}</span></p>
-            <p>좌석현황: <span id="festivalCapacity">{{ total_reservations }}/{{ festival.total_seats }}</span></p>
+            <p>좌석현황: <span id="festivalCapacity">{{ festival.capacity }}/{{ festival.total_seats }}</span></p>
         </div>
         <div class="seat-selection">
             <h3>좌석 선택</h3>
@@ -40,13 +40,14 @@
 
 {% block extra_js %}
 <script>
-  window.festivalData = {
-      festivalKey: '{{ festival.festival_key }}',
-      festivalTotalSeats: JSON.parse('{{ festival.total_seats }}'),
-      reservedSeats: JSON.parse('{{ reserved_seats|tojson|safe }}'),
-      isAlreadyReserved: JSON.parse('{{ is_already_reserved|tojson|safe }}')
-  };
-  console.log('Festival Data:', window.festivalData);
+window.festivalData = {
+    festivalKey: '{{ festival.festival_key }}',
+    festivalTotalSeats: {{ festival.total_seats }},
+    reservedSeats: {{ reserved_seats|tojson|safe }},
+    isReserved: {{ is_reserved|tojson|safe }}
+};
+console.log('Festival Data:', window.festivalData);
 </script>
 <script src="{{ url_for('static', filename='js/apply.js') }}"></script>
 {% endblock %}
+

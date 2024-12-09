@@ -1,27 +1,77 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Service</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    {% include 'components/navbar.html' %}
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <h1>Welcome to Our University Services</h1>
+    <p>Discover amazing opportunities and resources</p>
+</section>
+{% endblock %}
+
+{% block content %}
+<main class="container mt-5 text-center">
+    <h2 class="text-center">Welcome, {{ username if username else 'User' }}</h2>
+
+    <section class="applied-courses mt-5 mx-auto" style="max-width: 800px;">
+    <h2 class="section-title mb-4">Your Applied Courses</h2>
+    <div class="course-chart">
+        <table id="courseTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Course Name</th>
+                    <th>Professor</th>
+                    <th>Credits</th>
+                    <th>Department</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if applied_courses %}
+                    {% for course in applied_courses %}
+                        <tr>
+                            <td>{{ course.id }}</td>
+                            <td>{{ course.course_name }}</td>
+                            <td>{{ course.professor }}</td>
+                            <td>{{ course.credits }}</td>
+                            <td>{{ course.department }}</td>
+                            <td>{{ course.year }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="no-courses-message">
+                                신청한 강좌가 없습니다. <br>
+                                <a href="{{ url_for('main.course_registration') }}">신청하러가기</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
     
-    <section class="hero">
-        <h1>Welcome to Our University Services</h1>
-        <p>Discover amazing opportunities and resources</p>
+
+    <section class="festival-list mt-5 mx-auto">
+        <h2 class="section-title mb-4">Festival List</h2>
+        <div class="festival-container">
+            <button id="prevButton" class="nav-button">&lt;</button>
+            <div class="festival-items" id="festivalItems">
+                <!-- Festival items will be dynamically inserted here -->
+            </div>
+            <button id="nextButton" class="nav-button">&gt;</button>
+        </div>
+        <div class="page-indicator" id="pageIndicator">
+            <!-- Page dots will be dynamically inserted here -->
+        </div>
     </section>
+</main>
+{% endblock %}
 
-    <main>
-        <h2>Main Service</h2>
-        <p>This is the main page of our university services.</p>
-    </main>
-
-    {% include 'components/footer.html' %}
-    
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
 

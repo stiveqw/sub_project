@@ -1,6 +1,9 @@
+// Course service related JavaScript goes here
+
 let courses = [];
 let appliedCourses = [];
 let keptCourses = [];
+let allCourses = []; // 추가된 변수
 let currentPage = 1;
 const itemsPerPage = 5;
 
@@ -17,7 +20,7 @@ async function fetchCourseData() {
         console.log('Available Courses:', courses);
         console.log('Applied Courses:', appliedCourses);
         console.log('Kept Courses:', keptCourses);
-        createCourseList(courses);
+        showInitialMessage();  // 초기 메시지 표시
         updateAppliedCourses();
         updateKeptCourses();
     } catch (error) {
@@ -69,12 +72,12 @@ function populateDropdowns(credits, departments) {
     }
 }
 
-function createCourseList(courses) {
+function createCourseList(coursesToDisplay) {
     const courseTableBody = document.getElementById('courseTableBody');
     if (!courseTableBody) return;
 
     courseTableBody.innerHTML = '';
-    if (courses.length === 0) {
+    if (coursesToDisplay.length === 0) {
         courseTableBody.innerHTML = `
             <tr>
                 <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
@@ -82,13 +85,13 @@ function createCourseList(courses) {
                 </td>
             </tr>
         `;
-        updatePagination(courses.length);
+        updatePagination(0);
         return;
     }
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const pageItems = courses.slice(startIndex, endIndex);
+    const pageItems = coursesToDisplay.slice(startIndex, endIndex);
 
     pageItems.forEach(course => {
         const row = document.createElement('tr');
@@ -111,7 +114,7 @@ function createCourseList(courses) {
         courseTableBody.appendChild(row);
     });
 
-    updatePagination(courses.length);
+    updatePagination(coursesToDisplay.length);
 }
 
 function updatePagination(totalItems) {
@@ -164,7 +167,7 @@ function updatePagination(totalItems) {
 
 function changePage(page) {
     currentPage = page;
-    createCourseList(courses);
+    createCourseList(allCourses.length > 0 ? allCourses : courses); // 수정된 부분
 }
 
 function updateAppliedCourses() {
@@ -298,28 +301,128 @@ function cancelCourse(courseKey) {
 
 function filterCourses(credits, department) {
     if (credits === '' && department === '') {
-        createCourseList([]);  // Pass an empty array to show "No courses found" message
+        showNoCoursesMessage();
         return;
     }
-    const filteredCourses = courses.filter(course => 
-        (credits === '' || course.credits === parseInt(credits)) &&
-        (department === '' || course.department === department)
-    );
-    currentPage = 1;
-    createCourseList(filteredCourses);
+    showLoadingIndicator();
+    fetch(`/api/search_courses?credits=${credits}&department=${department}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.courses.length === 0) {
+                    showNoCoursesMessage();
+                } else {
+                    allCourses = data.courses;  // 수정된 부분
+                    currentPage = 1;  // 수정된 부분
+                    createCourseList(allCourses);
+                }
+            } else {
+                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorMessage("서버 오류가 발생했습니다.");
+        })
+        .finally(() => {
+            hideLoadingIndicator();
+        });
 }
 
 function filterCoursesByName(searchTerm) {
     if (searchTerm.trim() === '') {
-        createCourseList([]);  // Pass an empty array to show "No courses found" message
+        showNoCoursesMessage();
         return;
     }
-    const filteredCourses = courses.filter(course => 
-        course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.professor.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    currentPage = 1;
-    createCourseList(filteredCourses);
+    showLoadingIndicator();
+    fetch(`/api/search_courses?course_name=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.courses.length === 0) {
+                    showNoCoursesMessage();
+                } else {
+                    allCourses = data.courses;  // 수정된 부분
+                    currentPage = 1;  // 수정된 부분
+                    createCourseList(allCourses);
+                }
+            } else {
+                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorMessage("서버 오류가 발생했습니다.");
+        })
+        .finally(() => {
+            hideLoadingIndicator();
+        });
+}
+
+function fetchAllCourses() {
+    showLoadingIndicator();
+    fetch('/api/search_courses')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                allCourses = data.courses;  // 수정된 부분
+                currentPage = 1;  // 수정된 부분
+                createCourseList(allCourses);
+            } else {
+                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorMessage("서버 오류가 발생했습니다.");
+        })
+        .finally(() => {
+            hideLoadingIndicator();
+        });
+}
+
+// 로딩 인디케이터 표시/숨김 함수
+function showLoadingIndicator() {
+    // 로딩 인디케이터를 표시하는 코드 (구현 필요)
+    console.log("Loading indicator shown"); // Placeholder
+}
+
+function hideLoadingIndicator() {
+    // 로딩 인디케이터를 숨기는 코드 (구현 필요)
+    console.log("Loading indicator hidden"); // Placeholder
+}
+
+// 에러 메시지 표시 함수
+function showErrorMessage(message) {
+    alert(message);
+}
+
+function showInitialMessage() {
+    const courseTableBody = document.getElementById('courseTableBody');
+    if (courseTableBody) {
+        courseTableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
+                    원하는 과목을 검색하세요
+                </td>
+            </tr>
+        `;
+    }
+    updatePagination(0);
+}
+
+function showNoCoursesMessage() {
+    const courseTableBody = document.getElementById('courseTableBody');
+    if (courseTableBody) {
+        courseTableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
+                    조회된 강좌가 없습니다.
+                </td>
+            </tr>
+        `;
+    }
+    updatePagination(0);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -371,8 +474,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (allCoursesBtn) {
         allCoursesBtn.addEventListener('click', function() {
             currentPage = 1;
-            createCourseList(courses);
+            fetchAllCourses();
         });
     }
+
+    // 검색 버튼에 로딩 인디케이터 추가
+    const searchButtons = document.querySelectorAll('.search-button');
+    searchButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const originalText = this.textContent;
+            this.innerHTML = '<span class="loading-spinner"></span> 검색 중...';
+            setTimeout(() => {
+                this.textContent = originalText;
+            }, 1000);  // 1초 후 원래 텍스트로 복구
+        });
+    });
 });
 

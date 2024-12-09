@@ -2,7 +2,7 @@ body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
   margin: 0;
-  padding: 20px;
+  padding: 0;
 }
 
 header {
@@ -15,7 +15,7 @@ header {
 nav {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: right;
 }
 
 .logo {
@@ -120,12 +120,22 @@ footer {
   border-top: 1px solid #444;
 }
 
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.festival-list {
+  width: 100%;
+}
+
 .festival-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   margin-top: 20px;
+  justify-content: center;
 }
 
 .festival-grid-item {
@@ -269,7 +279,7 @@ footer {
   border: 1px solid #ccc;
   padding: 20px;
   border-radius: 5px;
-  height: 500px; /* 400px에서 500px로 변경 */
+  height: 500px;
   overflow-y: auto;
 }
 
@@ -294,7 +304,6 @@ footer {
   scrollbar-width: thin;
   scrollbar-color: #888 #f1f1f1;
 }
-
 
 .seat-grid {
   display: flex;
@@ -338,7 +347,6 @@ footer {
   width: 40px;
   height: 40px;
 }
-
 
 .button-container {
   margin-top: 2rem;
@@ -394,18 +402,53 @@ footer {
   color: #4CAF50;
 }
 
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 100%;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-indicator p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.pagination-ellipsis {
+  margin: 0 5px;
+  color: #333;
+}
+
 @media (max-width: 768px) {
   .application-container {
-      flex-direction: column;
+    flex-direction: column;
   }
 
   .festival-info,
   .seat-selection {
-      width: 100%;
-      padding-left: 0;
-      padding-right: 0;
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
   }
   .seat-grid {
-      max-height: 400px;
+    max-height: 400px;
   }
 }
+

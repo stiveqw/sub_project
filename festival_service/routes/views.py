@@ -1,144 +1,202 @@
-from flask import render_template, redirect, url_for, request, jsonify, make_response, abort
-from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, unset_jwt_cookies
-from functools import wraps
-import logging
-import re
+from flask import jsonify, request, render_template, redirect, url_for, make_response
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, unset_jwt_cookies
 from . import festival
-from models import Festival, Reservation, db
+from models import Reservation, Festival, User, db
 from sqlalchemy import func
+import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
-
-def parse_seat_number(seat_number):
-    match = re.match(r'([A-Z])(\d+)', seat_number)
-    if match:
-        row, number = match.groups()
-        return (ord(row) - ord('A')) * 30 + int(number)
-    return None
-
-def format_seat_number(seat_index):
-    row = chr(ord('A') + (seat_index - 1) // 30)
-    number = (seat_index - 1) % 30 + 1
-    return f"{row}{number}"
 
 @festival.route('/')
 @jwt_required()
 def home():
-    try:
-        verify_jwt_in_request()
-        page = request.args.get('page', 1, type=int)
-        per_page = 6  # 한 페이지에 표시할 축제 수
-        
-        # 전체 축제 수 조회
-        total_festivals = Festival.query.count()
-        
-        # 페이지네이션 적용
-        festivals = Festival.query.order_by(Festival.date.desc()).paginate(page=page, per_page=per_page, error_out=False)
-        
-        user_id = get_jwt_identity()
-        reserved_festival_keys = [r.festival_key for r in Reservation.query.filter_by(user_id=user_id).all()]
-        
-        # 각 축제별 예약된 좌석 수 계산
-        reservations = db.session.query(Reservation.festival_key, func.count(Reservation.id).label('reserved_seats')) \
-            .group_by(Reservation.festival_key).all()
-        reservation_dict = {r.festival_key: r.reserved_seats for r in reservations}
-        
-        festivals_data = [{
-            'id': f.id,
-            'festival_key': f.festival_key,
-            'title': f.title,
-            'total_seats': f.total_seats,
-            'capacity': f.capacity,
-            'reserved_seats': reservation_dict.get(f.festival_key, 0),  # 예약된 좌석 수, 없으면 0
-            'date': f.date.isoformat(),
-            'created_at': f.created_at.isoformat()
-        } for f in festivals.items]
-        
-        # 전체 페이지 수 계산
-        total_pages = (total_festivals + per_page - 1) // per_page
-        
-        return render_template('festival_main.html', 
-                               festivals=festivals_data, 
-                               page=page, 
-                               total_pages=total_pages,
-                               reserved_festival_keys=reserved_festival_keys)
-    except Exception as e:
-        logger.error(f"Error in home route: {str(e)}")
-        return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('festival.login', _external=True)}), 401
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    user_id = get_jwt_identity()
 
+    festivals = Festival.query.order_by(Festival.date).paginate(page=page, per_page=per_page, error_out=False)
+    
+    reserved_festival_keys = [r.festival_key for r in Reservation.query.filter_by(user_id=user_id, status='Reserved').all()]
+    
+    user_reserved_festivals = db.session.query(
+        Festival,
+        Reservation.id.label('reservation_id'),
+        Reservation.seat_number,
+        Reservation.status,
+        Reservation.reservation_time
+    ).join(Reservation, Festival.festival_key == Reservation.festival_key
+    ).filter(Reservation.user_id == user_id, Reservation.status == 'Reserved').all()
 
+    user_reserved_festivals = [
+        {
+            'id': res.reservation_id,
+            'festival_key': res.Festival.festival_key,
+            'title': res.Festival.title,
+            'seat_number': res.seat_number,
+            'status': res.status,
+            'reservation_time': res.reservation_time
+        } for res in user_reserved_festivals
+    ]
 
+    festivals_data = []
+    for festival in festivals.items:
+        festival_dict = festival.to_dict()
+        festival_dict['is_reserved'] = festival.festival_key in reserved_festival_keys
+        festival_dict['is_full'] = festival.capacity >= festival.total_seats
+        festivals_data.append(festival_dict)
 
-@festival.route('/apply/<string:festival_key>')
+    return render_template('festival_main.html', 
+                           festivals=festivals_data,
+                           reserved_festival_keys=reserved_festival_keys,
+                           user_reserved_festivals=user_reserved_festivals)
+
+@festival.route('/apply/<festival_key>')
 @jwt_required()
 def apply(festival_key):
-    try:
-        verify_jwt_in_request()
-        user_id = get_jwt_identity()
-        
-        festival = Festival.query.filter_by(festival_key=festival_key).first_or_404()
-        
-        # 해당 축제에 대한 사용자의 예약 여부 확인
-        is_already_reserved = Reservation.query.filter_by(user_id=user_id, festival_key=festival_key).first() is not None
-        
-        # 이미 예약된 좌석 목록 가져오기
-        reserved_seats = [r.seat_number for r in Reservation.query.filter_by(festival_key=festival_key).all()]
-        
-        # 전체 예약 수 계산
-        total_reservations = len(reserved_seats)
-        
-        return render_template('festival_apply.html', 
-                               festival=festival, 
-                               reserved_seats=reserved_seats,
-                               total_reservations=total_reservations,
-                               is_already_reserved=is_already_reserved)
-    except Exception as e:
-        logger.error(f"Error in apply route: {str(e)}")
-        return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('festival.login', _external=True)}), 401
+    user_id = get_jwt_identity()
+    festival = Festival.query.filter_by(festival_key=festival_key).first_or_404()
+    
+    # 현재 사용자의 예약 상태 확인
+    reservation = Reservation.query.filter_by(festival_key=festival_key, user_id=user_id).first()
+    is_reserved = reservation is not None and reservation.status == 'Reserved'
+
+    reserved_seats = [r.seat_number for r in Reservation.query.filter_by(festival_key=festival_key, status='Reserved').all()]
+
+    return render_template('festival_apply.html', 
+                           festival=festival, 
+                           reserved_seats=reserved_seats,
+                           is_reserved=is_reserved)
+
 @festival.route('/api/apply', methods=['POST'])
 @jwt_required()
 def api_apply():
     user_id = get_jwt_identity()
     data = request.json
+
     festival_key = data.get('festival_key')
     seat_number = data.get('seat_number')
 
     if not festival_key or not seat_number:
-        return jsonify({"success": False, "message": "Invalid request data"}), 400
+        return jsonify({"success": False, "message": "축제 키와 좌석 번호가 필요합니다."}), 400
 
     festival = Festival.query.filter_by(festival_key=festival_key).first()
     if not festival:
-        return jsonify({"success": False, "message": "Festival not found"}), 404
+        return jsonify({"success": False, "message": "해당 축제를 찾을 수 없습니다."}), 404
 
-    existing_reservation = Reservation.query.filter_by(festival_key=festival_key, seat_number=seat_number).first()
+    if festival.capacity >= festival.total_seats:
+        return jsonify({"success": False, "message": "축제가 이미 만석입니다."}), 400
+
+    existing_reservation = Reservation.query.filter_by(
+        festival_key=festival_key,
+        seat_number=seat_number,
+        status='Reserved'
+    ).first()
+
     if existing_reservation:
-        return jsonify({"success": False, "message": "This seat is already reserved"}), 400
+        return jsonify({"success": False, "message": "이미 예약된 좌석입니다."}), 400
 
-    new_reservation = Reservation(festival_key=festival_key, user_id=user_id, seat_number=seat_number)
-    db.session.add(new_reservation)
-    db.session.commit()
+    user_reservation = Reservation.query.filter_by(
+        festival_key=festival_key,
+        user_id=user_id,
+        status='Reserved'
+    ).first()
 
-    return jsonify({"success": True, "message": "Reservation successful"})
+    if user_reservation:
+        return jsonify({"success": False, "message": "이미 이 축제에 예약하셨습니다."}), 400
 
-@festival.route('/redirect_to_main')
-def redirect_to_main():
-    return redirect('http://localhost:5003/')
+    new_reservation = Reservation(
+        festival_key=festival_key,
+        user_id=user_id,
+        seat_number=seat_number,
+        status='Reserved',
+        reservation_time=datetime.utcnow()
+    )
 
-@festival.route('/redirect_to_news')
-def redirect_to_news():
-    return redirect('http://localhost:5004/news')
+    try:
+        db.session.add(new_reservation)
+        festival.capacity += 1
+        db.session.commit()
+        return jsonify({"success": True, "message": "예약이 완료되었습니다."}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Reservation failed: {str(e)}")
+        return jsonify({"success": False, "message": "예약 중 오류가 발생했습니다."}), 500
 
-@festival.route('/redirect_to_course')
-def redirect_to_course():
-    return redirect('http://localhost:5001/course_registration')
+@festival.route('/api/cancel_reservation/<int:reservation_id>', methods=['POST'])
+@jwt_required()
+def cancel_reservation(reservation_id):
+    try:
+        user_id = get_jwt_identity()
+        logger.info(f"Attempting to cancel reservation {reservation_id} for user {user_id}")
+        
+        reservation = Reservation.query.filter_by(id=reservation_id, user_id=user_id).first()
+        
+        if not reservation:
+            logger.warning(f"Reservation {reservation_id} not found or not authorized for user {user_id}")
+            return jsonify({"success": False, "message": "Reservation not found or not authorized"}), 404
+        
+        if reservation.status == 'Cancelled':
+            logger.info(f"Reservation {reservation_id} is already cancelled")
+            return jsonify({"success": False, "message": "Reservation is already cancelled"}), 400
+        
+        festival = Festival.query.filter_by(festival_key=reservation.festival_key).first()
+        if not festival:
+            logger.warning(f"Festival not found for reservation {reservation_id}")
+            return jsonify({"success": False, "message": "Associated festival not found"}), 404
+
+        reservation.status = 'Cancelled'
+        if festival.capacity > 0:
+            festival.capacity -= 1
+        
+        db.session.commit()
+        
+        logger.info(f"Reservation {reservation_id} cancelled successfully by user {user_id}")
+        return jsonify({"success": True, "message": "Reservation cancelled successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error in cancel_reservation: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@festival.route('/api/festivals')
+@jwt_required()
+def get_festivals():
+    user_id = get_jwt_identity()
+    
+    festivals = Festival.query.order_by(Festival.date).all()
+    reserved_festival_keys = [r.festival_key for r in Reservation.query.filter_by(user_id=user_id, status='Reserved').all()]
+    
+    festivals_data = []
+    for festival in festivals:
+        festival_dict = festival.to_dict()
+        festival_dict['is_reserved'] = festival.festival_key in reserved_festival_keys
+        festival_dict['is_full'] = festival.capacity >= festival.total_seats
+        festivals_data.append(festival_dict)
+    
+    return jsonify({"success": True, "festivals": festivals_data})
+
+@festival.route('/login')
+def login():
+    return redirect("http://localhost:5006/login")
 
 @festival.route('/logout')
 @jwt_required()
 def logout():
+    logger.info(f"Received request for {request.path}")
     response = make_response(redirect('http://localhost:5006/login'))
     unset_jwt_cookies(response)
     return response
 
-@festival.route('/login')
-def login():
-    return redirect('http://localhost:5006/login')
+
+@festival.route('/redirect_to_main')
+def redirect_to_main():
+    return redirect("http://localhost:5003/")
+
+@festival.route('/redirect_to_news')
+def redirect_to_news():
+    return redirect("http://localhost:5004/")
+
+@festival.route('/redirect_to_course')
+def redirect_to_course():
+    return redirect("http://localhost:5003/")
+

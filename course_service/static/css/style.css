@@ -35,6 +35,37 @@ p {
     background-color: #f9f9f9;
 }
 
+.course-chart {
+    width: 100%;
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  
+  #courseTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+  
+  #courseTable th, #courseTable td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    padding: 8px;
+  }
+  
+  #courseTable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  #courseTable td:first-child {
+    text-align: center;
+    border-right: 1px solid #ddd;
+  }
+
 .course-item h3, .registered-course-item h3 {
     margin-top: 0;
     color: #333;
@@ -559,5 +590,25 @@ footer {
   height: 32px;  /* 원하는 높이로 조정 가능 */
   line-height: 1;  /* 텍스트 수직 정렬을 위해 */
   vertical-align: middle;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    -webkit-animation: spin 1s ease-in-out infinite;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
 }
 

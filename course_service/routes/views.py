@@ -18,19 +18,8 @@ kept_courses = {}
 def get_courses():
     logger.info(f"Received request for {request.path}")
     try:
-        # 모든 과목 정보 가져오기
-        courses = Course.query.all()
-        courses_data = [{
-            'id': course.id,
-            'course_key': course.course_key,
-            'course_name': course.course_name,
-            'professor': course.professor,
-            'max_students': course.max_students,
-            'current_students': course.current_students,
-            'credits': course.credits,
-            'department': course.department,
-            'year': course.year
-        } for course in courses]
+        # Return empty list for courses
+        courses_data = []
 
         # 현재 사용자의 ID 가져오기
         current_user_id = get_jwt_identity()
@@ -114,6 +103,8 @@ def get_credits():
 def get_departments():
     logger.info(f"Received request for {request.path}, redirecting to dropdown_options")
     return redirect(url_for('course.get_dropdown_options'))
+
+
 
 @course.route('/api/search_courses')
 @jwt_required()

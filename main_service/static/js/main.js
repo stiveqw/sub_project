@@ -1,111 +1,128 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 여기에 필요한 다른 JavaScript 코드를 추가할 수 있습니다.
     console.log('Main service JavaScript loaded');
 
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
+    const festivalItems = document.getElementById('festivalItems');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const pageIndicator = document.getElementById('pageIndicator');
 
-    function setCookie(name, value, options = {}) {
-        options = {
-            path: '/',
-            ...options
-        };
-        if (options.expires instanceof Date) {
-            options.expires = options.expires.toUTCString();
-        }
-        let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
-        for (let optionKey in options) {
-            updatedCookie += "; " + optionKey;
-            let optionValue = options[optionKey];
-            if (optionValue !== true) {
-                updatedCookie += "=" + optionValue;
-            }
-        }
-        document.cookie = updatedCookie;
-    }
+    const festivalImages = [
+        'autumn-festival.jfif',
+        'canoe-festival.jfif',
+        'culture-festival.jfif',
+        'festival-schedule.jfif',
+        'music-festival.jfif',
+        'sports-festival.jfif',
+        'spring-festival.jfif',
+        'summer-festival.jfif',
+        'winter-festival.jfif'
+    ];
 
-    async function refreshCSRFToken() {
-        try {
-            const response = await fetch('/refresh-csrf', {
-                method: 'GET',
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (data.csrf_token) {
-                setCookie('csrf_access_token', data.csrf_token, { secure: true, sameSite: 'Strict' });
-                return data.csrf_token;
-            }
-        } catch (error) {
-            console.error('CSRF token refresh error:', error);
-            alert('보안 토큰을 갱신하는 데 실패했습니다. 다시 로그인해주세요.');
-            window.location.href = '/login';
-        }
-    }
+    let festivals = [];
+    let currentPage = 1;
+    const itemsPerPage = 3;
 
-    async function handleCSRFError() {
-        const newToken = await refreshCSRFToken();
-        if (newToken) {
-            return newToken;
-        } else {
-            throw new Error('Failed to refresh CSRF token');
-        }
-    }
-
-    async function fetchWithCSRF(url, options = {}) {
-        const csrfToken = getCookie('csrf_access_token');
-        const defaultOptions = {
-            credentials: 'include',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Content-Type': 'application/json'
-            }
-        };
-        const mergedOptions = { ...defaultOptions, ...options };
-        if (mergedOptions.body && typeof mergedOptions.body !== 'string') {
-            mergedOptions.body = JSON.stringify(mergedOptions.body);
-        }
-        try {
-            const response = await fetch(url, mergedOptions);
-            if (!response.ok) {
-                if (response.status === 400 && response.headers.get('X-CSRF-TOKEN-INVALID')) {
-                    const newToken = await handleCSRFError();
-                    mergedOptions.headers['X-CSRF-TOKEN'] = newToken;
-                    return fetchWithCSRF(url, mergedOptions);
+    function fetchFestivals() {
+        fetch('/api/festivals')
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
                 }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Fetch error:', error);
-            if (error.message.includes('401')) {
-                window.location.href = '/login';
-            }
-            throw error;
-        }
-    }
-
-    // 로그아웃 버튼 이벤트 리스너
-    const logoutButton = document.getElementById('logoutBtn');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', async function(e) {
-            e.preventDefault();
-            try {
-                const response = await fetchWithJWT(this.href, { method: 'POST' });
-                if (response.success) {
-                    window.location.href = response.redirect_url;
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    festivals = data.festivals;
+                    displayFestivals();
                 } else {
-                    console.error('Logout failed:', response.message);
+                    throw new Error(data.error || 'Unknown error occurred');
                 }
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (festivalItems) {
+                    festivalItems.innerHTML = `<p class="col-12">축제 정보를 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+                } else {
+                    console.error('Festival items container not found');
+                }
+            });
+    }
+
+    function displayFestivals() {
+        if (!festivalItems) {
+            console.error('Festival items container not found');
+            return;
+        }
+
+        const totalPages = Math.ceil(festivals.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageItems = festivals.slice(startIndex, endIndex);
+
+        festivalItems.innerHTML = '';
+        if (pageItems.length === 0) {
+            festivalItems.innerHTML = '<p>현재 사용 가능한 축제가 없습니다.</p>';
+            return;
+        }
+
+        pageItems.forEach((festival, index) => {
+            const item = document.createElement('div');
+            item.className = 'festival-item';
+            const imageIndex = (startIndex + index) % festivalImages.length;
+            item.innerHTML = `
+                <img src="/static/images/${festivalImages[imageIndex]}" alt="${festival.title}">
+                <div class="festival-item-content">
+                    <h3>${festival.title}</h3>
+                    <p>날짜: ${new Date(festival.date).toLocaleDateString()}</p>
+                    <p>좌석현황: ${festival.capacity}/${festival.total_seats}</p>
+                    <a href="http://localhost:5002/apply/${festival.festival_key}" class="btn btn-primary">지금 신청하기</a>
+                </div>
+            `;
+            festivalItems.appendChild(item);
         });
+
+        updatePageIndicator(totalPages);
+    }
+
+    function updatePageIndicator(totalPages) {
+        if (!pageIndicator) {
+            console.error('Page indicator not found');
+            return;
+        }
+        pageIndicator.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const dot = document.createElement('div');
+            dot.className = `page-dot ${i === currentPage ? 'active' : ''}`;
+            pageIndicator.appendChild(dot);
+        }
+    }
+
+    function nextPage() {
+        const totalPages = Math.ceil(festivals.length / itemsPerPage);
+        currentPage = currentPage === totalPages ? 1 : currentPage + 1;
+        displayFestivals();
+    }
+
+    function prevPage() {
+        const totalPages = Math.ceil(festivals.length / itemsPerPage);
+        currentPage = currentPage === 1 ? totalPages : currentPage - 1;
+        displayFestivals();
+    }
+
+    if (festivalItems && prevButton && nextButton && pageIndicator) {
+        fetchFestivals();
+
+        prevButton.addEventListener('click', prevPage);
+        nextButton.addEventListener('click', nextPage);
+
+        prevButton.addEventListener('mousedown', (e) => e.preventDefault());
+        nextButton.addEventListener('mousedown', (e) => e.preventDefault());
+    } else {
+        console.error('One or more required elements are missing');
+        if (!festivalItems) console.error('festivalItems not found');
+        if (!prevButton) console.error('prevButton not found');
+        if (!nextButton) console.error('nextButton not found');
+        if (!pageIndicator) console.error('pageIndicator not found');
     }
 });
-
-   
-    
 

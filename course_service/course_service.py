@@ -1,6 +1,7 @@
-from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory
+from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory, abort
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, jwt_required
+from werkzeug.exceptions import Unauthorized, UnprocessableEntity
 from config import Config
 from models import db
 from routes import course as course_blueprint
@@ -28,6 +29,7 @@ app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False  # Set to True in production
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # CSRF protection disabled
 app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # Set to 'Strict' in production
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'error'
 
 @app.before_request
 def before_request():
@@ -37,12 +39,22 @@ def before_request():
             logger.debug(f"JWT verified for request to {request.endpoint}")
         except Exception as e:
             logger.error(f"JWT verification failed for request to {request.endpoint}: {str(e)}")
-            return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('course.login', _external=True)}), 401
+            abort(401)
+
+@app.route('/')
+def index():
+    return redirect(url_for('course_registration'))
 
 @app.route('/course_registration')
 def course_registration():
-    logger.info(f"Accessed course registration page")
-    return render_template('course_service.html')
+    try:
+        verify_jwt_in_request()
+        logger.info(f"Accessed course registration page")
+        return render_template('course_service.html')
+    except Exception as e:
+        logger.error(f"JWT verification failed: {str(e)}")
+        return render_template('auth_required.html'), 401
+
 
 @app.errorhandler(400)
 def bad_request(error):
@@ -50,9 +62,10 @@ def bad_request(error):
     return jsonify({"error": "잘못된 요청입니다."}), 400
 
 @app.errorhandler(401)
-def unauthorized(error):
-    logger.error(f"Unauthorized access: {str(error)}")
-    return jsonify({"error": "인증되지 않은 접근입니다."}), 401
+@app.errorhandler(422)
+def handle_auth_error(error):
+    app.logger.error(f"Authentication error: {str(error)}")
+    return render_template('auth_required.html'), 401
 
 @app.errorhandler(404)
 def not_found_error(error):
