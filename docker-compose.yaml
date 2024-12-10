@@ -4,7 +4,7 @@ services:
   login_service:
     build:
       context: ./login_service
-      dockerfile: Dockerfile.
+      dockerfile: Dockerfile
     ports:
       - "5006:5006"
     expose:
