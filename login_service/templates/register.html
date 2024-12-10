@@ -10,12 +10,12 @@
     <div class="container">
         <h1>회원가입</h1>
         <form id="registerForm" method="POST">
-            <input type="text" name="student_id" placeholder="학번" required>
-            <input type="text" name="department" placeholder="학과" required>
-            <input type="text" name="name" placeholder="이름" required>
-            <input type="email" name="email" placeholder="이메일" required>
-            <input type="tel" name="phone_number" placeholder="전화번호" required>
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="text" name="student_id" placeholder="학번" maxlength="15" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
+            <input type="text" name="department" placeholder="학과" pattern="[가-힣a-zA-Z]+" title="문자만 입력 가능합니다" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
+            <input type="text" name="name" placeholder="이름" pattern="[가-힣a-zA-Z]+" title="문자만 입력 가능합니다" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
+            <input type="email" name="email" placeholder="이메일" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
+            <input type="tel" name="phone_number" placeholder="전화번호 (010-XXXX-XXXX)" pattern="[0-9]{3}-[0-9]{4}-[0-9]{4}" title="010-XXXX-XXXX 형식으로 입력해주세요" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
+            <input type="password" name="password" placeholder="비밀번호" maxlength="20" required onkeypress="return event.charCode != 32" oninput="this.value=this.value.replace(/\s/g,'')">
             <button type="submit">가입하기</button>
         </form>
         <p>이미 계정이 있으신가요? <a href="{{ url_for('login') }}">로그인</a></p>

@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, m
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.routing import BuildError
 from config import Config
 from models import db, User
 from datetime import timedelta
@@ -31,17 +30,17 @@ def login():
         app.logger.debug(f"Request headers: {request.headers}")
         
         try:
-            name = request.form.get('username')
+            student_id = request.form.get('student_id')
             password = request.form.get('password')
             
-            app.logger.debug(f"Extracted username: {name}, password: {'*' * len(password) if password else 'None'}")
+            app.logger.debug(f"Extracted student_id: {student_id}, password: {'*' * len(password) if password else 'None'}")
             
-            if not name or not password:
-                app.logger.error("Missing username or password")
-                return jsonify({"error": "Username and password are required"}), 400
+            if not student_id or not password:
+                app.logger.error("Missing student_id or password")
+                return jsonify({"error": "Student ID and password are required"}), 400
             
-            app.logger.debug(f"Login attempt for user: {name}")
-            user = User.query.filter_by(name=name).first()
+            app.logger.debug(f"Login attempt for user with student_id: {student_id}")
+            user = User.query.filter_by(student_id=student_id).first()
             
             if user and check_password_hash(user.password_hash, password):
                 app.logger.debug("Password check successful")
