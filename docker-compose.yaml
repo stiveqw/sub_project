@@ -1,33 +1,12 @@
-version: '3'
+version: '3.8'
 
 services:
-  api_gateway:
-    build: ./api_gateway
-    ports:
-    - "5000:5000"
-    expose:
-      - "5000"
-    depends_on:
-      - login_service
-      - course_service
-      - festival_service
-      - main_service
-      - notice_service
-    environment:
-    - LOGIN_SERVICE_URL=http://login_service:5006
-    - COURSE_SERVICE_URL=http://course_service:5001
-    - FESTIVAL_SERVICE_URL=http://festival_service:5002
-    - MAIN_SERVICE_URL=http://notice_service:5003
-    - NOTICE_SERVICE_URL=http://main_service:5004
-
-    networks:
-      - app_network
-    
-
   login_service:
-    build: ./login_service
+    build:
+      context: ./login_service
+      dockerfile: Dockerfile
     ports:
-    - "5006:5006"
+      - "5006:5006"
     expose:
       - "5006"
     depends_on:
@@ -38,9 +17,11 @@ services:
       - app_network
 
   course_service:
-    build: ./course_service
+    build:
+      context: ./course_service
+      dockerfile: Dockerfile
     ports:
-    - "5001:5001"
+      - "5001:5001"
     expose:
       - "5001"
     depends_on:
@@ -51,24 +32,26 @@ services:
       - app_network
 
   festival_service:
-    build: ./festival_service
+    build:
+      context: ./festival_service
+      dockerfile: Dockerfile
     ports:
-    - "5002:5002"
+      - "5002:5002"
     expose:
       - "5002"
     depends_on:
       - mysql
-    volumes:
-      - ./festival_service:/app
     env_file:
       - ./festival_service/.env
     networks:
       - app_network
 
   main_service:
-    build: ./main_service
+    build:
+      context: ./main_service
+      dockerfile: Dockerfile
     ports:
-    - "5003:5003"
+      - "5003:5003"
     expose:
       - "5003"
     depends_on:
@@ -79,9 +62,11 @@ services:
       - app_network
 
   notice_service:
-    build: ./notice_service
+    build:
+      context: ./notice_service
+      dockerfile: Dockerfile
     ports:
-    - "5004:5004"
+      - "5004:5004"
     expose:
       - "5004"
     depends_on:
@@ -92,27 +77,13 @@ services:
       - app_network
 
   mysql:
-    image: project-mysql-image:latest
+    image: kyk000306/test-mysql:latest
     environment:
-      MYSQL_ROOT_PASSWORD: mysql
-      MYSQL_DATABASE: course_db, user_db, festival_db, notice_db
+      MYSQL_ROOT_PASSWORD: P*ssW0rd
+    ports:
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - api_gateway
-      - login_service
-      - course_service
-      - festival_service
-      - main_service
-      - notice_service
     networks:
       - app_network
 

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
 app.config['WTF_CSRF_ENABLED'] = False  # CSRF 보호 비활성화
 
 # JWT 설정
@@ -20,9 +21,6 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']  # JWT 토큰 위치 �
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # CSRF 보호 비활성화 (개발 환경에서만 사용)
 
 db.init_app(app)
-
-with app.app_context():
-    db.create_all()
 
 app.register_blueprint(main_blueprint)
 
