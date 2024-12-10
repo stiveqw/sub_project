@@ -155,6 +155,7 @@ CREATE TABLE `notices` (
 -- Insert data into notices
 INSERT INTO `notices` VALUES (1,'System Maintenance Notice','The system will undergo maintenance on December 1st from 1:00 AM to 4:00 AM.','2024-12-01'),(2,'Holiday Announcement','The office will be closed for the holidays from December 24th to January 1st.','2024-12-20'),(3,'New Course Available','A new course on Data Science has been added to the curriculum. Check it out now!','2024-11-29'),(4,'Event Update','The annual cultural festival has been rescheduled to December 10th.','2024-11-28'),(5,'Policy Change','There have been updates to the refund policy. Please read the updated terms.','2024-11-25');
 
+
 -- Switch to festival_db
 USE `festival_db`;
 
@@ -205,6 +206,18 @@ CREATE TABLE `reservations` (
 
 -- Insert data into reservations
 INSERT INTO `reservations` VALUES (1,'FEST001',7,'A1','Reserved','2024-11-29 11:00:42'),(2,'FEST002',8,'B12','Reserved','2024-11-29 11:00:42'),(3,'FEST003',9,'C5','Reserved','2024-11-29 11:00:42'),(4,'FEST004',10,'D20','Cancelled','2024-11-29 11:00:42'),(5,'FEST005',11,'E8','Reserved','2024-11-29 11:00:42');
+
+USE `course_db`;
+CREATE TABLE IF NOT EXISTS course_keep (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `student_id` VARCHAR(20) NOT NULL,
+    `course_key` VARCHAR(50) NOT NULL,
+    status ENUM('keeped', 'cancelled') DEFAULT 'keeped',
+    kept_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (student_id, course_key),
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (course_key) REFERENCES courses(course_key) ON DELETE CASCADE
+);
 
 DROP USER IF EXISTS 'admin'@'%';
 CREATE USER 'admin'@'%' IDENTIFIED BY 'P*ssW0rd';
