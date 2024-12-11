@@ -1,8 +1,7 @@
 
 import os
 from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import JWTManager, verify_jwt_in_request
 from config import Config
 from routes import main as main_blueprint
 from models import db

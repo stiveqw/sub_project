@@ -1,6 +1,5 @@
 import requests
 from flask import current_app
-import logging
 from flask_jwt_extended import get_jwt
 
 

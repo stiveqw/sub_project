@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory, abort
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, jwt_required
-from werkzeug.exceptions import Unauthorized, UnprocessableEntity
+
+from flask_jwt_extended import JWTManager, verify_jwt_in_request
+
 from config import Config
 from models import db
 from routes import course as course_blueprint

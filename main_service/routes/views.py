@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, jsonify, make_response
+from flask import render_template, redirect, url_for, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, unset_jwt_cookies
 from functools import wraps
 

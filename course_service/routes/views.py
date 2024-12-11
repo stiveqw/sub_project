@@ -1,11 +1,11 @@
-from flask import render_template, redirect, url_for, request, jsonify, make_response, current_app
-from flask_jwt_extended import jwt_required, unset_jwt_cookies, get_jwt_identity, verify_jwt_in_request, get_jwt, create_access_token
-from functools import wraps
+from flask import render_template, redirect, url_for, request, jsonify, make_response
+from flask_jwt_extended import jwt_required, unset_jwt_cookies, get_jwt_identity
+
 from . import course
 
 from models import db, Course, Registration, Student
 from sqlalchemy.exc import SQLAlchemyError
-import logging
+
 
 
 

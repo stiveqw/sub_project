@@ -1,8 +1,8 @@
 from flask import jsonify, request, render_template, redirect, url_for, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, unset_jwt_cookies
 from . import festival
-from models import Reservation, Festival, User, db
-from sqlalchemy import func
+from models import Reservation, Festival, db
+
 
 from datetime import datetime
 
@@ -195,5 +195,5 @@ def redirect_to_news():
 
 @festival.route('/redirect_to_course')
 def redirect_to_course():
-    return redirect("http://localhost:5003/")
+    return redirect("http://localhost:5001/")
 
