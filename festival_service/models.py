@@ -42,4 +42,3 @@ class Reservation(db.Model):
     reservation_time = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (db.UniqueConstraint('festival_key', 'seat_number', name='uix_1'),)
-

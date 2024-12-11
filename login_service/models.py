@@ -14,4 +14,3 @@ class User(db.Model):
     phone_number = db.Column(db.String(15), nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'), nullable=False)
-

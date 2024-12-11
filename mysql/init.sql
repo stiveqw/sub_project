@@ -89,7 +89,6 @@ INSERT INTO `users` VALUES (12,'20230001','Computer Science','John Doe','john.do
 DELIMITER ;;
 
 CREATE TRIGGER `sync_to_festival_users_insert` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-    INSERT INTO `festival_db`.users (user_id, name, email, phone_number, created_at)
     VALUES (NEW.user_id, NEW.name, NEW.email, NEW.phone_number, NEW.created_at)
     ON DUPLICATE KEY UPDATE
         name = NEW.name,
@@ -99,7 +98,6 @@ CREATE TRIGGER `sync_to_festival_users_insert` AFTER INSERT ON `users` FOR EACH 
 END;;
 
 CREATE TRIGGER `sync_to_students_insert` AFTER INSERT ON `users` FOR EACH ROW BEGIN
-    INSERT INTO `course_db`.students (id, student_id, name, email, phone_number, department, created_at)
     VALUES (NEW.user_id, NEW.student_id, NEW.name, NEW.email, NEW.phone_number, NEW.department, NEW.created_at)
     ON DUPLICATE KEY UPDATE
         name = NEW.name,
@@ -110,7 +108,6 @@ CREATE TRIGGER `sync_to_students_insert` AFTER INSERT ON `users` FOR EACH ROW BE
 END;;
 
 CREATE TRIGGER `sync_to_festival_users_update` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
-    INSERT INTO `festival_db`.users (user_id, name, email, phone_number, created_at)
     VALUES (NEW.user_id, NEW.name, NEW.email, NEW.phone_number, NEW.created_at)
     ON DUPLICATE KEY UPDATE
         name = NEW.name,
@@ -120,7 +117,6 @@ CREATE TRIGGER `sync_to_festival_users_update` AFTER UPDATE ON `users` FOR EACH 
 END;;
 
 CREATE TRIGGER `sync_to_students_update` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
-    INSERT INTO `course_db`.students (id, student_id, name, email, phone_number, department, created_at)
     VALUES (NEW.user_id, NEW.student_id, NEW.name, NEW.email, NEW.phone_number, NEW.department, NEW.created_at)
     ON DUPLICATE KEY UPDATE
         name = NEW.name,

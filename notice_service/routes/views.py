@@ -1,11 +1,11 @@
 from flask import render_template, redirect, url_for, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, unset_jwt_cookies
 from functools import wraps
-import logging
+
 from models import Notice, db
 from . import notice
 
-logger = logging.getLogger(__name__)
+
 
 @notice.route('/')
 @jwt_required()

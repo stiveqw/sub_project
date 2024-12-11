@@ -18,18 +18,13 @@ spec:
         ports:
         - containerPort: 5004
         env:
-        - name: DB_HOST
           value: mysql
-        - name: DB_USER
           value: root
-        - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql-secret
               key: root-password
-        - name: DB_NAME
-          value: notice_db
-        - name: NOTICE_SERVICE_SECRET_KEY
+         - name: NOTICE_SERVICE_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: notice-service-secret

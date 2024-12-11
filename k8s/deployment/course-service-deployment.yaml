@@ -18,18 +18,13 @@ spec:
         ports:
         - containerPort: 5001
         env:
-        - name: DB_HOST
           value: mysql
-        - name: DB_USER
           value: root
-        - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql-secret
               key: root-password
-        - name: DB_NAME
-          value: course_db
-        - name: COURSE_SERVICE_SECRET_KEY
+         - name: COURSE_SERVICE_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: course-service-secret

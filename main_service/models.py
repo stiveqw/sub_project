@@ -71,4 +71,3 @@ class Festival(db.Model):
             'date': self.date.isoformat(),
             'created_at': self.created_at.isoformat()
         }
-

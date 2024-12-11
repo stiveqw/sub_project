@@ -18,16 +18,12 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: DB_HOST
           value: mysql
-        - name: DB_USER
           value: root
-        - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql-secret
               key: root-password
-        - name: DB_NAME
           value: myapp
         - name: API_SECRET_KEY
           valueFrom:

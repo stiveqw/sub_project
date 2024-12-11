@@ -9,4 +9,3 @@ class Notice(db.Model):
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date = db.Column(db.Date, nullable=False, default=date.today)
-
