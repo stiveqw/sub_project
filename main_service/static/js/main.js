@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Main service JavaScript loaded');
+
 
     const festivalItems = document.getElementById('festivalItems');
     const prevButton = document.getElementById('prevButton');

@@ -3,10 +3,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from . import festival
 from models import Reservation, Festival, User, db
 from sqlalchemy import func
-import logging
+
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
+
 
 @festival.route('/')
 @jwt_required()
@@ -120,7 +120,7 @@ def api_apply():
         return jsonify({"success": True, "message": "예약이 완료되었습니다."}), 200
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Reservation failed: {str(e)}")
+        
         return jsonify({"success": False, "message": "예약 중 오류가 발생했습니다."}), 500
 
 @festival.route('/api/cancel_reservation/<int:reservation_id>', methods=['POST'])
@@ -128,21 +128,21 @@ def api_apply():
 def cancel_reservation(reservation_id):
     try:
         user_id = get_jwt_identity()
-        logger.info(f"Attempting to cancel reservation {reservation_id} for user {user_id}")
+       
         
         reservation = Reservation.query.filter_by(id=reservation_id, user_id=user_id).first()
         
         if not reservation:
-            logger.warning(f"Reservation {reservation_id} not found or not authorized for user {user_id}")
+           
             return jsonify({"success": False, "message": "Reservation not found or not authorized"}), 404
         
         if reservation.status == 'Cancelled':
-            logger.info(f"Reservation {reservation_id} is already cancelled")
+           
             return jsonify({"success": False, "message": "Reservation is already cancelled"}), 400
         
         festival = Festival.query.filter_by(festival_key=reservation.festival_key).first()
         if not festival:
-            logger.warning(f"Festival not found for reservation {reservation_id}")
+          
             return jsonify({"success": False, "message": "Associated festival not found"}), 404
 
         reservation.status = 'Cancelled'
@@ -151,11 +151,9 @@ def cancel_reservation(reservation_id):
         
         db.session.commit()
         
-        logger.info(f"Reservation {reservation_id} cancelled successfully by user {user_id}")
         return jsonify({"success": True, "message": "Reservation cancelled successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error in cancel_reservation: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 @festival.route('/api/festivals')
@@ -182,7 +180,6 @@ def login():
 @festival.route('/logout')
 @jwt_required()
 def logout():
-    logger.info(f"Received request for {request.path}")
     response = make_response(redirect('http://localhost:5006/login'))
     unset_jwt_cookies(response)
     return response
