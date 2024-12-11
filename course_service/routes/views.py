@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, request, jsonify, make_res
 from flask_jwt_extended import jwt_required, unset_jwt_cookies, get_jwt_identity, verify_jwt_in_request, get_jwt, create_access_token
 from functools import wraps
 from . import course
-from extensions import socketio
+
 from models import db, Course, Registration, Student
 from sqlalchemy.exc import SQLAlchemyError
 import logging

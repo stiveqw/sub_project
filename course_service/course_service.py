@@ -5,7 +5,7 @@ from werkzeug.exceptions import Unauthorized, UnprocessableEntity
 from config import Config
 from models import db
 from routes import course as course_blueprint
-from extensions import socketio
+
 import os
 
 
@@ -18,7 +18,7 @@ app.config.from_object(Config)
 # Initialize extensions
 db.init_app(app)
 jwt = JWTManager(app)
-socketio.init_app(app, cors_allowed_origins="*")
+
 
 # Register blueprints
 app.register_blueprint(course_blueprint)
