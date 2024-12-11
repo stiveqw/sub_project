@@ -102,7 +102,6 @@ function createCourseList(coursesToDisplay) {
             <td>${course.credits}</td>
             <td>${course.department}</td>
             <td>${course.year}</td>
-            <td><button class="keep-button" data-course-key="${course.course_key}">Keep</button></td>
             <td><button class="${isFull ? 'deadline-button' : 'apply-button'}" data-course-key="${course.course_key}" ${isApplied || isFull ? 'disabled' : ''}>
                 ${isApplied ? 'Applied' : isFull ? 'Deadline' : 'Apply'}
             </button></td>

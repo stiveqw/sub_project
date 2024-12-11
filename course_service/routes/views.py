@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, unset_jwt_cookies, get_jwt_identity
-
+from werkzeug.exceptions import Unauthorized, UnprocessableEntity
 from . import course
 
 from models import db, Course, Registration, Student
@@ -19,6 +19,7 @@ def get_courses():
     try:
         # Return empty list for courses
         courses_data = []
+
 
         # 현재 사용자의 ID 가져오기
         current_user_id = get_jwt_identity()
@@ -55,7 +56,7 @@ def get_courses():
 @course.route('/course_registration')
 @jwt_required()
 def course_service():
-    
+
     return render_template('course_service.html')
 
 @course.route('/api/dropdown_options', methods=['GET'])

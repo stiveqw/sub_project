@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory, abort
 
-from flask_jwt_extended import JWTManager, verify_jwt_in_request
-
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, jwt_required
+from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from models import db
 from routes import course as course_blueprint
@@ -29,6 +29,7 @@ app.config['JWT_COOKIE_SECURE'] = False  # Set to True in production
 app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # Set to 'Strict' in production
 app.config['JWT_ERROR_MESSAGE_KEY'] = 'error'
 
+
 @app.before_request
 def before_request():
     if request.endpoint and request.endpoint != 'static':
@@ -41,13 +42,16 @@ def before_request():
 
 @app.route('/')
 def index():
+    
     return redirect(url_for('course_registration'))
 
 @app.route('/course_registration')
 def course_registration():
     try:
         verify_jwt_in_request()
-       
+        
+        
+        
         return render_template('course_service.html')
     except Exception as e:
         
