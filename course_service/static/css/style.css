@@ -131,7 +131,11 @@ p {
   }
   
 
-  
+  .keep-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
 
   .no-data-row {
     height: 240px;  /* Approximately the height of 6 regular rows */
@@ -156,7 +160,19 @@ p {
     background-color: #0056b3;
 }
 
+.keep-button {
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
+.keep-button:hover {
+    background-color: #333;
+}
 
 .search-table {
     width: 100%;
@@ -195,7 +211,39 @@ p {
     background-color: #333;  /* hover 시 약간 밝은 검은색으로 변경 */
 }
 
-
+  #courseKeepTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    margin-top: 20px;
+  }
+  
+  #courseKeepTable th, #courseKeepTable td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    padding: 8px;
+  }
+  
+  #courseKeepTable th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  #courseKeepTable td:first-child {
+    text-align: center;
+    border-right: 1px solid #ddd;
+  }
+  
+  
+  #courseKeepTable .no-data-row td {
+    height: 240px;
+    text-align: center;
+    vertical-align: middle;
+    color: rgba(128, 128, 128, 0.7);
+    font-size: 16px;
+  }
 
   .checkbox-container {
     display: inline-block;
@@ -394,6 +442,33 @@ footer {
     border-top: 1px solid #444;
 }
 
+.keep-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 2px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+}
+
+.keep-button:hover {
+    background-color: #45a049;
+}
+
+.keep-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.keep-button.kept {
+    background-color: #008CBA;
+}
 
 .loading-spinner {
     border: 3px solid #f3f3f3;

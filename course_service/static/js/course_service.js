@@ -2,7 +2,8 @@
 
 let courses = [];
 let appliedCourses = [];
-let allCourses = []; // 추가된 변수
+let keptCourses = [];
+let allCourses = [];
 let currentPage = 1;
 const itemsPerPage = 5;
 
@@ -15,62 +16,97 @@ async function fetchCourseData() {
         const data = await response.json();
         courses = data.courses || [];
         appliedCourses = data.appliedCourses || [];
-        keptCourses = data.keptCourses || [];
-       
-        showInitialMessage();  // 초기 메시지 표시
+        console.log('Available Courses:', courses);
+        console.log('Applied Courses:', appliedCourses);
+        showInitialMessage();
         updateAppliedCourses();
+        await fetchKeptCourses();
     } catch (error) {
         console.error('Error fetching course data:', error);
         alert('과목 데이터를 불러오는 데 실패했습니다. 페이지를 새로고침 해주세요.');
     }
 }
 
-async function fetchDropdownOptions() {
+async function fetchKeptCourses() {
     try {
-        const response = await fetch('/api/dropdown_options');
+        console.log('Fetching kept courses...');
+        const response = await fetch('/api/get_kept_courses');
         if (!response.ok) {
-            throw new Error('Failed to fetch dropdown options');
+            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error('Failed to fetch kept courses');
         }
         const data = await response.json();
         if (data.success) {
-            populateDropdowns(data.credits, data.departments);
+            keptCourses = data.kept_courses || [];
+            console.log('Kept Courses:', keptCourses);
+            updateKeptCourses();
+            updateKeepButtons();
         } else {
-            throw new Error(data.message || 'Failed to fetch dropdown options');
+            console.error('Failed to fetch kept courses. Server message:', data.message);
+            throw new Error(data.message || 'Failed to fetch kept courses');
         }
     } catch (error) {
-        console.error('Error fetching dropdown options:', error);
-        alert('드롭다운 옵션을 불러오는 데 실패했습니다. 페이지를 새로고침 해주세요.');
+        console.error('Error in fetchKeptCourses:', error);
+        alert('보관된 과목 데이터를 불러오는 데 실패했습니다.');
     }
 }
 
-function populateDropdowns(credits, departments) {
-    const creditsDropdown = document.getElementById('creditsDropdown');
-    const departmentDropdown = document.getElementById('departmentDropdown');
+function updateKeptCourses() {
+    const keptCoursesTableBody = document.getElementById('courseKeepTableBody');
+    if (!keptCoursesTableBody) return;
 
-    if (creditsDropdown) {
-        creditsDropdown.innerHTML = '<option value="">Select Credits</option>';
-        credits.forEach(credit => {
-            const option = document.createElement('option');
-            option.value = credit;
-            option.textContent = credit;
-            creditsDropdown.appendChild(option);
-        });
+    keptCoursesTableBody.innerHTML = '';
+    if (keptCourses.length === 0) {
+        keptCoursesTableBody.innerHTML = `
+            <tr>
+                <td colspan="9" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
+                    보관한 강좌가 없습니다.
+                </td>
+            </tr>
+        `;
+        return;
     }
+    keptCourses.forEach(course => {
+        if (course.status === 'kept') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${course.id}</td>
+                <td>${course.course_name}</td>
+                <td>${course.professor}</td>
+                <td>${course.max_students}</td>
+                <td>${course.current_students}</td>
+                <td>${course.credits}</td>
+                <td>${course.department}</td>
+                <td>${course.year}</td>
+                <td><button class="remove-kept-button" data-course-key="${course.course_key}">Remove</button></td>
+            `;
+            keptCoursesTableBody.appendChild(row);
+        }
+    });
+}
 
-    if (departmentDropdown) {
-        departmentDropdown.innerHTML = '<option value="">Select Department</option>';
-        departments.forEach(department => {
-            const option = document.createElement('option');
-            option.value = department;
-            option.textContent = department;
-            departmentDropdown.appendChild(option);
-        });
-    }
+function updateKeepButtons() {
+    const keepButtons = document.querySelectorAll('.keep-button');
+    keepButtons.forEach(button => {
+        const courseKey = button.getAttribute('data-course-key');
+        const keptCourse = keptCourses.find(course => course.course_key === courseKey);
+        if (keptCourse && keptCourse.status === 'kept') {
+            button.disabled = true;
+            button.textContent = 'Kept';
+        } else {
+            button.disabled = false;
+            button.textContent = 'Keep';
+        }
+    });
 }
 
 function createCourseList(coursesToDisplay) {
+    console.log('Creating course list with', coursesToDisplay.length, 'courses');
     const courseTableBody = document.getElementById('courseTableBody');
-    if (!courseTableBody) return;
+    if (!courseTableBody) {
+        console.error('Course table body not found');
+        return;
+    }
 
     courseTableBody.innerHTML = '';
     if (coursesToDisplay.length === 0) {
@@ -109,7 +145,9 @@ function createCourseList(coursesToDisplay) {
         courseTableBody.appendChild(row);
     });
 
+    console.log('Displayed', pageItems.length, 'courses on current page');
     updatePagination(coursesToDisplay.length);
+    console.log('Course list creation completed');
 }
 
 function updatePagination(totalItems) {
@@ -162,7 +200,7 @@ function updatePagination(totalItems) {
 
 function changePage(page) {
     currentPage = page;
-    createCourseList(allCourses.length > 0 ? allCourses : courses); // 수정된 부분
+    createCourseList(allCourses.length > 0 ? allCourses : courses);
 }
 
 function updateAppliedCourses() {
@@ -196,77 +234,97 @@ function updateAppliedCourses() {
     });
 }
 
-
-
-function updateKeptCourses() {
-    const keptCoursesTableBody = document.getElementById('courseKeepTableBody');
-    if (!keptCoursesTableBody) return;
-
-    keptCoursesTableBody.innerHTML = '';
-    if (keptCourses.length === 0) {
-        keptCoursesTableBody.innerHTML = `
-            <tr>
-                <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
-                    보관한 강좌가 없습니다.
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    keptCourses.forEach(course => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${course.id}</td>
-            <td>${course.course_name}</td>
-            <td>${course.professor}</td>
-            <td>${course.max_students}</td>
-            <td>${course.current_students}</td>
-            <td>${course.credits}</td>
-            <td>${course.department}</td>
-            <td>${course.year}</td>
-            <td><button class="remove-kept-button" data-course-key="${course.course_key}">Remove</button></td>
-        `;
-        keptCoursesTableBody.appendChild(row);
+function keepCourse(courseKey) {
+    console.log(`Attempting to keep course with key: ${courseKey}`);
+    fetch('/api/keep_course', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            course_key: courseKey
+        }),
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log(`Successfully kept course: ${courseKey}`);
+            alert('과목이 성공적으로 보관되었습니다!');
+            fetchKeptCourses();
+        } else {
+            console.error(`Failed to keep course: ${courseKey}. Server message: ${data.message}`);
+            alert(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error in keepCourse:', error);
+        alert('과목 보관 중 오류가 발생했습니다. 다시 시도해 주세요.');
     });
 }
 
-async function handleApply(courseKey) {
-    try {
-        const response = await fetch('/api/apply_course', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ course_key: courseKey }),
-            credentials: 'include'
-        });
-
-        const result = await response.json();
-
+function removeKeptCourse(courseKey) {
+    console.log(`Attempting to remove kept course with key: ${courseKey}`);
+    fetch('/api/remove_kept_course', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            course_key: courseKey
+        }),
+        credentials: 'include'
+    })
+    .then(response => {
         if (!response.ok) {
-            throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        return result;
-    } catch (error) {
-        console.error('Error applying for course:', error);
-        throw error;
-    }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log(`Successfully removed kept course: ${courseKey}`);
+            alert('과목이 성공적으로 보관 목록에서 제거되었습니다!');
+            fetchKeptCourses();
+        } else {
+            console.error(`Failed to remove kept course: ${courseKey}. Server message: ${data.message}`);
+            alert(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error in removeKeptCourse:', error);
+        alert('과목 제거 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    });
 }
 
 function applyCourse(courseKey) {
-    handleApply(courseKey)
+    fetch('/api/apply_course', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ course_key: courseKey }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
     .then(data => {
-        if (data && data.success) {
+        if (data.success) {
             alert('과목 신청이 성공적으로 완료되었습니다!');
-            window.location.reload(); // 페이지 새로고침
+            fetchCourseData();
         } else {
-            alert(data ? data.message : '과목 신청 중 오류가 발생했습니다.');
+            alert(data.message);
         }
     })
     .catch((error) => {
         console.error('Error:', error);
-        alert(`과목 신청 중 오류가 발생했습니다: ${error.message}`);
+        alert('과목 신청 중 오류가 발생했습니다. 다시 시도해 주세요.');
     });
 }
 
@@ -285,7 +343,7 @@ function cancelCourse(courseKey) {
     .then(data => {
         if (data.success) {
             alert('과목 취소가 성공적으로 완료되었습니다!');
-            window.location.reload(); // 페이지 새로고침
+            fetchCourseData();
         } else {
             alert(data.message);
         }
@@ -294,104 +352,6 @@ function cancelCourse(courseKey) {
         console.error('Error:', error);
         alert('과목 취소 중 오류가 발생했습니다. 다시 시도해 주세요.');
     });
-}
-
-function filterCourses(credits, department) {
-    if (credits === '' && department === '') {
-        showNoCoursesMessage();
-        return;
-    }
-    showLoadingIndicator();
-    fetch(`/api/search_courses?credits=${credits}&department=${department}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.courses.length === 0) {
-                    showNoCoursesMessage();
-                } else {
-                    allCourses = data.courses;  // 수정된 부분
-                    currentPage = 1;  // 수정된 부분
-                    createCourseList(allCourses);
-                }
-            } else {
-                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showErrorMessage("서버 오류가 발생했습니다.");
-        })
-        .finally(() => {
-            hideLoadingIndicator();
-        });
-}
-
-function filterCoursesByName(searchTerm) {
-    if (searchTerm.trim() === '') {
-        showNoCoursesMessage();
-        return;
-    }
-    showLoadingIndicator();
-    fetch(`/api/search_courses?course_name=${encodeURIComponent(searchTerm)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.courses.length === 0) {
-                    showNoCoursesMessage();
-                } else {
-                    allCourses = data.courses;  // 수정된 부분
-                    currentPage = 1;  // 수정된 부분
-                    createCourseList(allCourses);
-                }
-            } else {
-                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showErrorMessage("서버 오류가 발생했습니다.");
-        })
-        .finally(() => {
-            hideLoadingIndicator();
-        });
-}
-
-function fetchAllCourses() {
-    showLoadingIndicator();
-    fetch('/api/search_courses')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                allCourses = data.courses;  // 수정된 부분
-                currentPage = 1;  // 수정된 부분
-                createCourseList(allCourses);
-            } else {
-                showErrorMessage(data.message || "과목을 불러오는데 실패했습니다.");
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showErrorMessage("서버 오류가 발생했습니다.");
-        })
-        .finally(() => {
-            hideLoadingIndicator();
-        });
-}
-
-// 로딩 인디케이터 표시/숨김 함수
-function showLoadingIndicator() {
-    // 로딩 인디케이터를 표시하는 코드 (구현 필요)
-    console.log("Loading indicator shown"); // Placeholder
-}
-
-function hideLoadingIndicator() {
-    // 로딩 인디케이터를 숨기는 코드 (구현 필요)
-    console.log("Loading indicator hidden"); // Placeholder
-}
-
-// 에러 메시지 표시 함수
-function showErrorMessage(message) {
-    alert(message);
 }
 
 function showInitialMessage() {
@@ -408,23 +368,8 @@ function showInitialMessage() {
     updatePagination(0);
 }
 
-function showNoCoursesMessage() {
-    const courseTableBody = document.getElementById('courseTableBody');
-    if (courseTableBody) {
-        courseTableBody.innerHTML = `
-            <tr>
-                <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
-                    조회된 강좌가 없습니다.
-                </td>
-            </tr>
-        `;
-    }
-    updatePagination(0);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     fetchCourseData();
-    fetchDropdownOptions();
 
     const courseTableBody = document.getElementById('courseTableBody');
     if (courseTableBody) {
@@ -432,6 +377,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.classList.contains('apply-button') && !e.target.disabled) {
                 const courseKey = e.target.getAttribute('data-course-key');
                 applyCourse(courseKey);
+            }
+            if (e.target.classList.contains('keep-button') && !e.target.disabled) {
+                const courseKey = e.target.getAttribute('data-course-key');
+                keepCourse(courseKey);
             }
         });
     }
@@ -446,44 +395,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const keywordSearchBtn = document.getElementById('keywordSearchBtn');
-    const courseNameSearchBtn = document.getElementById('courseNameSearchBtn');
-    const courseNameInput = document.getElementById('courseNameInput');
-    const creditsDropdown = document.getElementById('creditsDropdown');
-    const departmentDropdown = document.getElementById('departmentDropdown');
-
-    if (keywordSearchBtn) {
-        keywordSearchBtn.addEventListener('click', function() {
-            const credits = creditsDropdown.value;
-            const department = departmentDropdown.value;
-            filterCourses(credits, department);
+    const courseKeepTableBody = document.getElementById('courseKeepTableBody');
+    if (courseKeepTableBody) {
+        courseKeepTableBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-kept-button')) {
+                const courseKey = e.target.getAttribute('data-course-key');
+                removeKeptCourse(courseKey);
+            }
         });
     }
-
-    if (courseNameSearchBtn) {
-        courseNameSearchBtn.addEventListener('click', function() {
-            const searchTerm = courseNameInput.value;
-            filterCoursesByName(searchTerm);
-        });
-    }
-
-    const allCoursesBtn = document.getElementById('allCoursesBtn');
-    if (allCoursesBtn) {
-        allCoursesBtn.addEventListener('click', function() {
-            currentPage = 1;
-            fetchAllCourses();
-        });
-    }
-
-    // 검색 버튼에 로딩 인디케이터 추가
-    const searchButtons = document.querySelectorAll('.search-button');
-    searchButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const originalText = this.textContent;
-            this.innerHTML = '<span class="loading-spinner"></span> 검색 중...';
-            setTimeout(() => {
-                this.textContent = originalText;
-            }, 1000);  // 1초 후 원래 텍스트로 복구
-        });
-    });
 });
+

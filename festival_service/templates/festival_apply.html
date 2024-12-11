@@ -42,11 +42,11 @@
 <script>
 window.festivalData = {
     festivalKey: '{{ festival.festival_key }}',
-    festivalTotalSeats: JSON.parse('{{ festival.total_seats }}'),
-    reservedSeats: JSON.parse('{{ reserved_seats|tojson|safe }}'),
-    isReserved: JSON.parse('{{ is_reserved|tojson|safe }}')
+    festivalTotalSeats: {{ festival.total_seats }},
+    reservedSeats: {{ reserved_seats|tojson|safe }},
+    isReserved: {{ is_reserved|tojson|safe }}
 };
-
+console.log('Festival Data:', window.festivalData);
 </script>
 <script src="{{ url_for('static', filename='js/apply.js') }}"></script>
 {% endblock %}

@@ -5,7 +5,7 @@ import logging
 from models import Notice, db
 from . import notice
 
-
+logger = logging.getLogger(__name__)
 
 @notice.route('/')
 @jwt_required()

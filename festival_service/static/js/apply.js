@@ -3,7 +3,10 @@ const { festivalKey, festivalTotalSeats, reservedSeats, isReserved } = window.fe
 document.addEventListener('DOMContentLoaded', function() {
     const { festivalKey, festivalTotalSeats, reservedSeats, isAlreadyReserved } = window.festivalData || {};
     
-
+    console.log('Festival Key:', festivalKey);
+    console.log('Total Seats:', festivalTotalSeats);
+    console.log('Reserved Seats:', reservedSeats);
+    console.log('Is Already Reserved:', isAlreadyReserved);
 
     function formatSeatNumber(seatIndex) {
         const row = String.fromCharCode('A'.charCodeAt(0) + Math.floor((seatIndex - 1) / 30));

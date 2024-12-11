@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCancelPage = 1;
     
 
-  
+    console.log("Total festivals in JavaScript:", allFestivals.length);
+    console.log("Total cancel festivals in JavaScript:", allCancelFestivals.length);
 
     function showLoading(id) {
         const loadingElement = document.getElementById(id);
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const endIndex = startIndex + festivalsPerPage;
         const festivalsToShow = allFestivals.slice(startIndex, endIndex);
 
-     
+        console.log("Displaying festivals:", startIndex, "to", endIndex);
 
         const festivalGrid = document.getElementById('festival-list');
         if (!festivalGrid) {
@@ -70,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const endIndex = startIndex + festivalsPerPage;
         const festivalsToShow = allCancelFestivals.slice(startIndex, endIndex);
 
-     
+        console.log("Displaying cancel festivals:", startIndex, "to", endIndex);
 
         const festivalGrid = document.getElementById('cancel-festival-list');
         if (!festivalGrid) {
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setupPagination(paginationId, totalItems, currentPageNum, changePageFunc) {
         const totalPages = Math.ceil(totalItems / festivalsPerPage);
-      
+        console.log(`Total ${paginationId} pages:`, totalPages);
 
         const pagination = document.getElementById(paginationId);
         if (!pagination) {
@@ -154,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function changePage(page) {
         currentPage = page;
-       
+        console.log("Changing to page:", page);
         showLoading('festival-loading-indicator');
         setTimeout(() => {
             displayFestivals();
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function changeCancelPage(page) {
         currentCancelPage = page;
-       
+        console.log("Changing cancel page to:", page);
         showLoading('cancel-loading-indicator');
         setTimeout(() => {
             displayCancelFestivals();
