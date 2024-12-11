@@ -198,6 +198,38 @@ function updateAppliedCourses() {
 
 
 
+function updateKeptCourses() {
+    const keptCoursesTableBody = document.getElementById('courseKeepTableBody');
+    if (!keptCoursesTableBody) return;
+
+    keptCoursesTableBody.innerHTML = '';
+    if (keptCourses.length === 0) {
+        keptCoursesTableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="height: 240px; text-align: center; color: rgba(128, 128, 128, 0.7);">
+                    보관한 강좌가 없습니다.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    keptCourses.forEach(course => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${course.id}</td>
+            <td>${course.course_name}</td>
+            <td>${course.professor}</td>
+            <td>${course.max_students}</td>
+            <td>${course.current_students}</td>
+            <td>${course.credits}</td>
+            <td>${course.department}</td>
+            <td>${course.year}</td>
+            <td><button class="remove-kept-button" data-course-key="${course.course_key}">Remove</button></td>
+        `;
+        keptCoursesTableBody.appendChild(row);
+    });
+}
+
 async function handleApply(courseKey) {
     try {
         const response = await fetch('/api/apply_course', {

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_jwt_extended import JWTManager, create_access_token, set_access_cookies
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.routing import BuildError
 from config import Config
 from models import db, User
 from datetime import timedelta
@@ -24,13 +25,16 @@ def login():
     if request.method == 'POST':
          
         try:
-            student_id = request.form.get('student_id')
+            name = request.form.get('username')
             password = request.form.get('password')
             
+            app.logger.debug(f"Extracted student_id: {student_id}, password: {'*' * len(password) if password else 'None'}")
             
             if not student_id or not password:
+                app.logger.error("Missing student_id or password")
                 return jsonify({"error": "Student ID and password are required"}), 400
             
+            app.logger.debug(f"Login attempt for user with student_id: {student_id}")
             user = User.query.filter_by(student_id=student_id).first()
             
             if user and check_password_hash(user.password_hash, password):

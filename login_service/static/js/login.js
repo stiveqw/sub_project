@@ -1,27 +1,5 @@
-function removeWhitespace(input) {
-    input.value = input.value.replace(/\s/g, '');
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
-    const studentIdInput = document.querySelector('input[name="student_id"]');
-    const passwordInput = document.querySelector('input[name="password"]');
-    
-    // 학번 입력 제한
-    studentIdInput.addEventListener('input', function(e) {
-        if (e.target.value.length > 15) {
-            e.target.value = e.target.value.slice(0, 15);
-        }
-        removeWhitespace(e.target);
-    });
-
-    // 비밀번호 입력 제한
-    passwordInput.addEventListener('input', function(e) {
-        if (e.target.value.length > 20) {
-            e.target.value = e.target.value.slice(0, 20);
-        }
-        removeWhitespace(e.target);
-    });
     
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -46,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('로그인 성공!');
                 window.location.href = data.redirect_url;
             } else {
-                alert(data.message || '학번 또는 비밀번호가 잘못되었습니다.');
+                alert(data.message || '로그인에 실패했습니다.');
                 loginForm.reset();
             }
         })
