@@ -10,12 +10,37 @@
     <div class="container">
         <h1>로그인</h1>
         <form id="loginForm" method="POST">
-            <input type="text" name="student_id" placeholder="학번" required>
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="text" name="student_id" placeholder="학번" required maxlength="8" pattern="\d{8}" title="8자리 숫자를 입력해주세요." oninput="validateAndEscapeInput(this)">
+            <input type="password" name="password" placeholder="비밀번호" required minlength="8" maxlength="20" pattern=".{8,20}" title="비밀번호는 8자에서 20자 사이여야 합니다." oninput="validatePassword(this)">
             <button type="submit">로그인</button>
         </form>
         <p>계정이 없으신가요? <a href="{{ url_for('register') }}">회원가입</a></p>
     </div>
+    <script>
+
+function validateAndEscapeInput(input) {
+    if (input.name === 'student_id') {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+}
+
+function validatePassword(input) {
+        // 모든 공백과 HTML 특수문자 제거
+        input.value = input.value.replace(/[\s&<>"']/g, '');
+        // 8~20자 제한
+        input.value = input.value.slice(0, 20);
+}
+
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    var password = document.querySelector('input[name="password"]');
+    if (password.value.length < 8 || password.value.length > 20) {
+        alert('비밀번호는 8자에서 20자 사이여야 합니다.');
+        event.preventDefault();
+    }
+    // 제출 전 마지막으로 공백 제거
+    password.value = password.value.replace(/\s/g, '');
+});
+</script>
     <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>

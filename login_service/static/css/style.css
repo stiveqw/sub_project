@@ -58,4 +58,18 @@ a {
 a:hover {
     text-decoration: underline;
 }
+.email-group, .phone-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 1rem;
+}
+
+.email-group input, .phone-group input {
+    flex: 1;
+}
+
+.email-group span, .phone-group span {
+    font-weight: bold;
+}
 

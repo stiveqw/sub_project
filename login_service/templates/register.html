@@ -10,16 +10,99 @@
     <div class="container">
         <h1>회원가입</h1>
         <form id="registerForm" method="POST">
-            <input type="text" name="student_id" placeholder="학번" required>
-            <input type="text" name="department" placeholder="학과" required>
-            <input type="text" name="name" placeholder="이름" required>
-            <input type="email" name="email" placeholder="이메일" required>
-            <input type="tel" name="phone_number" placeholder="전화번호" required>
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="text" name="student_id" placeholder="학번" required maxlength="8" pattern="\d{8}" title="8자리 숫자를 입력해주세요." oninput="validateInput(this)">
+            <input type="text" name="department" placeholder="학과" required maxlength="20" oninput="validateInput(this)">
+            <input type="text" name="name" placeholder="이름" required maxlength="15" oninput="validateInput(this)">
+            <div class="email-group">
+                <input type="text" name="email_local" placeholder="이메일" required maxlength="10" oninput="validateInput(this)">
+                <span>@</span>
+                <input type="text" name="email_domain" placeholder="도메인" required maxlength="10" oninput="validateInput(this)">
+                <span>.</span>
+                <input type="text" name="email_tld" placeholder="com" required maxlength="3" oninput="validateInput(this)">
+            </div>
+            <input type="hidden" name="email" id="fullEmail">
+            <div class="phone-group">
+                <input type="text" name="phone_1" placeholder="010" required maxlength="3" oninput="validateInput(this)">
+                <span>-</span>
+                <input type="text" name="phone_2" placeholder="1234" required maxlength="4" oninput="validateInput(this)">
+                <span>-</span>
+                <input type="text" name="phone_3" placeholder="5678" required maxlength="4" oninput="validateInput(this)">
+            </div>
+            <input type="hidden" name="phone_number" id="fullPhoneNumber">
+            <input type="password" name="password" placeholder="비밀번호" required minlength="8" maxlength="20" oninput="validatePassword(this)" pattern="^[^\s]{8,20}$">
+            <p id="password-strength" class="password-strength"></p>
+            <p class="password-rule">비밀번호는 8~20자로 제한됩니다. 공백은 허용되지 않습니다.</p>
             <button type="submit">가입하기</button>
         </form>
         <p>이미 계정이 있으신가요? <a href="{{ url_for('login') }}">로그인</a></p>
     </div>
+    <script>
+    
+    function validateInput(input) {
+        if (input.name === 'student_id') {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        } else if (input.name.startsWith('phone_')) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        } else if (input.name === 'department' || input.name === 'name') {
+            // 모든 공백 제거
+            input.value = input.value.replace(/\s/g, '');
+            // 한글(자음, 모음 포함), 영문만 허용
+            input.value = input.value.replace(/[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
+        } else if (input.name.startsWith('email_')) {
+            input.value = input.value.replace(/[^a-zA-Z0-9]/g, '');
+            if (input.value.toLowerCase() === 'localhost') {
+                input.value = '';
+            }
+        } else if (input.name === 'password') {
+            // 모든 공백 제거
+            input.value = input.value.replace(/\s/g, '');
+            // 8~20자 제한
+            input.value = input.value.slice(0, 20);
+        }
+    }
+    function validatePassword(input) {
+    // 모든 공백과 HTML 특수문자 제거
+    input.value = input.value.replace(/[\s&<>"']/g, '');
+    // 8~20자 제한
+    input.value = input.value.slice(0, 20);
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var department = document.querySelector('input[name="department"]').value;
+        var name = document.querySelector('input[name="name"]').value;
+        var emailLocal = document.querySelector('input[name="email_local"]').value;
+        var emailDomain = document.querySelector('input[name="email_domain"]').value;
+        var emailTld = document.querySelector('input[name="email_tld"]').value;
+        var fullEmail = emailLocal + '@' + emailDomain + '.' + emailTld;
+        document.getElementById('fullEmail').value = escapeHtml(fullEmail);
+
+        var phone1 = document.querySelector('input[name="phone_1"]').value;
+        var phone2 = document.querySelector('input[name="phone_2"]').value;
+        var phone3 = document.querySelector('input[name="phone_3"]').value;
+        var fullPhoneNumber = phone1 + '-' + phone2 + '-' + phone3;
+        document.getElementById('fullPhoneNumber').value = escapeHtml(fullPhoneNumber);
+
+        var password = document.querySelector('input[name="password"]');
+        if (password.value.length < 8) {
+            alert('비밀번호는 8자 이상이어야 합니다.');
+            return;
+        }
+
+        this.submit();
+    });
+    </script>
+    <style>
+        .password-rule, .password-strength {
+            font-size: 0.8em;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        .password-rule {
+            color: #666;
+        }
+    </style>
     <script src="{{ url_for('static', filename='js/register.js') }}"></script>
 </body>
 </html>
