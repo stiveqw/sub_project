@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 allFestivals = data.festivals;
-                allCancelFestivals = data.festivals.filter(f => f.is_reserved); // Update: Changed allCancelFestivals assignment
+                allCancelFestivals = data.user_reserved_festivals || [];
                 displayFestivals();
                 displayCancelFestivals();
             } else {
@@ -256,8 +256,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 alert('예약이 성공적으로 취소되었습니다.');
                 refreshFestivals();
+                window.location.reload();
             } else {
                 throw new Error(data.message || '예약 취소에 실패했습니다.');
+                window.location.reload();
             }
         })
         .catch(error => {
@@ -265,8 +267,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (error.message === 'Reservation is already cancelled') {
                 alert('이 예약은 이미 취소되었습니다. 페이지를 새로고침합니다.');
                 refreshFestivals();
+                window.location.reload();
             } else {
                 alert('예약 취소 중 오류가 발생했습니다: ' + error.message);
+                window.location.reload();
             }
         });
     }
