@@ -12,7 +12,7 @@
     <h2 class="section-title">Festival Application</h2>
     <div class="application-container">
         <div class="festival-info">
-            <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="{{ festival.title }}">
+            <img src="{{ url_for('static', filename='images/' + image) }}" alt="{{ festival.title }}">
             <h3 id="festivalTitle">{{ festival.title }}</h3>
             <p id="festivalDescription">{{ festival.description }}</p>
             <p>Date: <span id="festivalDate">{{ festival.date.strftime('%Y-%m-%d %H:%M') }}</span></p>
@@ -42,9 +42,9 @@
 <script>
 window.festivalData = {
     festivalKey: '{{ festival.festival_key }}',
-    festivalTotalSeats: {{ festival.total_seats }},
-    reservedSeats: {{ reserved_seats|tojson|safe }},
-    isReserved: {{ is_reserved|tojson|safe }}
+    festivalTotalSeats: JSON.parse('{{ festival.total_seats }}'),
+    reservedSeats: JSON.parse('{{ reserved_seats|tojson|safe }}'),
+    isReserved: JSON.parse('{{ is_reserved|tojson|safe }}')
 };
 console.log('Festival Data:', window.festivalData);
 </script>

@@ -76,13 +76,13 @@
         var emailDomain = document.querySelector('input[name="email_domain"]').value;
         var emailTld = document.querySelector('input[name="email_tld"]').value;
         var fullEmail = emailLocal + '@' + emailDomain + '.' + emailTld;
-        document.getElementById('fullEmail').value = escapeHtml(fullEmail);
+        document.getElementById('fullEmail').value = fullEmail;
 
         var phone1 = document.querySelector('input[name="phone_1"]').value;
         var phone2 = document.querySelector('input[name="phone_2"]').value;
         var phone3 = document.querySelector('input[name="phone_3"]').value;
         var fullPhoneNumber = phone1 + '-' + phone2 + '-' + phone3;
-        document.getElementById('fullPhoneNumber').value = escapeHtml(fullPhoneNumber);
+        document.getElementById('fullPhoneNumber').value = fullPhoneNumber;
 
         var password = document.querySelector('input[name="password"]');
         if (password.value.length < 8) {

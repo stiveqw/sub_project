@@ -1,6 +1,20 @@
 let allFestivals, allCancelFestivals;
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    const festivalServiceImages = [
+        'autumn-festival.jfif',
+        'canoe-festival.jfif',
+        'culture-festival.jfif',
+        'festival-schedule.jfif',
+        'music-festival.jfif',
+        'sports-festival.jfif',
+        'spring-festival.jfif',
+        'summer-festival.jfif',
+        'winter-festival.jfif',
+        'default.jpg'
+    ];
+
     allFestivals = typeof festivalsData !== 'undefined' ? festivalsData : [];
     allCancelFestivals = typeof userReservedFestivals !== 'undefined' ? userReservedFestivals : [];
 
@@ -8,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let currentCancelPage = 1;
     
-
     console.log("Total festivals in JavaScript:", allFestivals.length);
     console.log("Total cancel festivals in JavaScript:", allCancelFestivals.length);
 
@@ -41,13 +54,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         festivalGrid.innerHTML = '';
 
-        festivalsToShow.forEach(festival => {
+        festivalsToShow.forEach((festival, index) => {
             const festivalElement = document.createElement('div');
             festivalElement.className = 'festival-grid-item';
             const isReserved = festival.is_reserved;
             const isFull = festival.is_full;
+            const imageIndex = (startIndex + index) % festivalServiceImages.length;
+            const imageSrc = `/static/images/${festivalServiceImages[imageIndex]}`;
             festivalElement.innerHTML = `
-                <img src="/static/images/default.jpg" alt="${festival.title}">
+                 <img src="${imageSrc}" alt="${festival.title}" onerror="this.src='/static/images/default.jpg';">
                 <h3>${festival.title}</h3>
                 <p>날짜: ${new Date(festival.date).toLocaleDateString()}</p>
                 <p>좌석현황: ${festival.capacity}/${festival.total_seats}</p>  
@@ -55,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ? `<button class="apply-button reserved" disabled>이미 예약한 축제입니다</button>`
                     : isFull
                         ? `<button class="apply-button full" disabled>신청 마감</button>`
-                        : `<a href="/apply/${festival.festival_key}" class="apply-button">지금 신청하기</a>`
+                        : `<a href="/apply/${festival.festival_key}?image=${encodeURIComponent(festivalServiceImages[imageIndex])}" class="apply-button">지금 신청하기</a>`
                 }
             `;
             festivalGrid.appendChild(festivalElement);
@@ -84,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const festivalElement = document.createElement('div');
             festivalElement.className = 'festival-grid-item';
             festivalElement.innerHTML = `
-                <img src="/static/images/default.jpg" alt="${festival.title}">
                 <h3>${festival.title}</h3>
                 <p>좌석 번호: ${festival.seat_number}</p>
                 <p>예약 시간: ${new Date(festival.reservation_time).toLocaleString()}</p>

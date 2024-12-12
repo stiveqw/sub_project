@@ -3,8 +3,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from . import festival
 from models import Reservation, Festival, User, db
 from sqlalchemy import func
-
- 
 from datetime import datetime
 
 
@@ -63,11 +61,13 @@ def apply(festival_key):
     is_reserved = reservation is not None and reservation.status == 'Reserved'
 
     reserved_seats = [r.seat_number for r in Reservation.query.filter_by(festival_key=festival_key, status='Reserved').all()]
+    image = request.args.get('image', 'default.jpg')
 
     return render_template('festival_apply.html', 
                            festival=festival, 
                            reserved_seats=reserved_seats,
-                           is_reserved=is_reserved)
+                           is_reserved=is_reserved,
+                           image=image)
 
 @festival.route('/api/apply', methods=['POST'])
 @jwt_required()
