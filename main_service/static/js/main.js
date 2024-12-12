@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>${festival.title}</h3>
                     <p>날짜: ${new Date(festival.date).toLocaleDateString()}</p>
                     <p>좌석현황: ${festival.capacity}/${festival.total_seats}</p>
-                    <a href="http://localhost:5002/apply/${festival.festival_key}" class="btn btn-primary">지금 신청하기</a>
+                    <a href="http://localhost:5002/apply/${festival.festival_key}?image=${encodeURIComponent(festivalImages[imageIndex])}"" class="btn btn-primary">지금 신청하기</a>
                 </div>
             `;
             festivalItems.appendChild(item);
