@@ -2,7 +2,7 @@
 import os
 from flask import Flask, request, redirect, url_for, jsonify, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, get_csrf_token
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
 from config import Config
 from models import db
 from routes import notice as notice_blueprint
@@ -11,7 +11,7 @@ from routes import notice as notice_blueprint
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+
 
 db.init_app(app)
 jwt = JWTManager(app)
@@ -19,7 +19,7 @@ jwt = JWTManager(app)
 # JWT 설정 추가
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False  # 개발 환경에서는 False, 프로덕션에서는 True로 설정
-app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+
 app.config['JWT_COOKIE_SAMESITE'] = 'Lax'  # 개발 환경에서는 'Lax', 프로덕션에서는 'Strict'로 설정
 
 app.register_blueprint(notice_blueprint)
@@ -64,12 +64,7 @@ def internal_error(error):
      
     return jsonify({"error": "서버 내부 오류가 발생했습니다."}), 500
 
-@app.route('/refresh-csrf', methods=['GET'])
-def refresh_csrf():
-    csrf_token = get_csrf_token()
-    response = jsonify({'csrf_token': csrf_token})
-    response.set_cookie('csrf_access_token', csrf_token, secure=False, httponly=False, samesite='Lax')
-    return response
+
 
 @app.route('/favicon.ico')
 def favicon():

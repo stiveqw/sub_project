@@ -17,7 +17,6 @@
       <h3 class="notice-title">{{ notice.title }}</h3>
       <p class="notice-date">{{ notice.date.strftime('%Y-%m-%d') }}</p>
     </div>
-    <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="{{ notice.title }}" class="notice-image">
     <div class="notice-content">{{ notice.content }}</div>
   </div>
   <div class="back-button-container">
@@ -27,6 +26,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/news_item.js') }}"></script>
+
 {% endblock %}
 

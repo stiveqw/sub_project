@@ -27,8 +27,6 @@
     <div class="grid notice-grid" id="notice-list">
         {% for notice in notices %}
         <div class="notice-item notice-grid-item">
-            <img src="{{ url_for('static', filename='images/default.jpg') }}" alt="{{ notice.title }}">
-            <h3><a href="{{ url_for('notice.news_item', notice_id=notice.id) }}">{{ notice.title }}</a></h3>
             <p class="notice-content">{{ notice.content|truncate(100) }}</p>
             <p class="notice-date">{{ notice.date.strftime('%Y-%m-%d') }}</p>
         </div>
