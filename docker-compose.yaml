@@ -75,20 +75,23 @@ services:
       - ./notice_service/.env
     networks:
       - app_network
-
   mysql:
-    image: kyk000306/test-mysql:latest
+    image: mysql:latest
     environment:
-      MYSQL_ROOT_PASSWORD: P*ssW0rd
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: course_db, festival_db, user_db, notice_db
     ports:
       - "3307:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app_network
+  
+  
 
 volumes:
-  mysql_data:
+  mysql-data:
 
 networks:
   app_network:

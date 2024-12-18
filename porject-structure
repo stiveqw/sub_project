@@ -13,6 +13,8 @@ flask-microservices/
 │   ├── requirements.txt
 │   ├── config.py
 │   ├── models.py
+│   ├── init.sql
+│   ├── docker-compose.yaml
 │   ├── login_service.py
 │   ├── templates/
 │   │   ├── login.html
@@ -81,6 +83,8 @@ flask-microservices/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── config.py
+│   ├── docker-compose.yaml
+│   ├── init.sql
 │   ├── models.py
 │   ├── main_service.py
 │   ├── routes/
