@@ -38,7 +38,7 @@ class Reservation(db.Model):
     festival_key = db.Column(db.String(50), db.ForeignKey('festivals.festival_key'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     seat_number = db.Column(db.String(10), nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='Reserved')
+    status = db.Column(db.Enum('Reserved', 'Cancelled'), default='Reserved')
     reservation_time = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (db.UniqueConstraint('festival_key', 'seat_number', name='uix_1'),)

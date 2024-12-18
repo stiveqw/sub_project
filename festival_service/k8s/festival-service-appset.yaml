@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: festival-service-applicationset
+  namespace: festival-service
+spec:
+  generators:
+    - list:
+        elements:
+          - name: festival-service-appset
+            repoURL: 'git@github.com:YeongKyuKang/SchoolService.git'
+            targetRevision: FestivalService
+            path: 'k8s'
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{targetRevision}}'
+        path: '{{path}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: festival-service
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
