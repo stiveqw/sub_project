@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notice-service-container
+  namespace: notice-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notice-service
+  template:
+    metadata:
+      labels:
+        app: notice-service
+    spec:
+      containers:
+      - name: notice-service-container
+        image: ghcr.io/yeongkyukang/notice_service:latest
+        env:
+          - name: DB_USER
+            value: root
+          - name: DB_PASSWORD
+            value: mysql
+          - name: DB_HOST
+            value: mysql-service.default
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: notice_db
+      imagePullSecrets:
+      - name: ghcr-secret

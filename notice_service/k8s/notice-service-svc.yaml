@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notice-service-svc
+  labels:
+    app: notice-service
+  namespace: notice-service
+spec:
+  selector:
+    app: notice-service
+  ports:
+    - protocol: TCP
+      port: 80         
+      targetPort: 5006
+  type: ClusterIP

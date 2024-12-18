@@ -1,0 +1,4 @@
+docker-compose -f docker-compose.yaml down -v      
+
+docker-compose -f docker-compose.yaml up --build -d
+docker-compose -f docker-compose.yaml exec -T notice_service python -m unittest test_notice_service.py

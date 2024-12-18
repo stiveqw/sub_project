@@ -1,54 +1,54 @@
-from flask import render_template, redirect, url_for, request, jsonify, make_response
-from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, unset_jwt_cookies
 from functools import wraps
+from flask import render_template, redirect, url_for, request, jsonify, make_response, current_app
+from flask_jwt_extended import jwt_required, unset_jwt_cookies, verify_jwt_in_request
 from models import Notice, db
 from . import notice
 
-
-
-@notice.route('/')
-@jwt_required()
-def home():
-    try:
-        verify_jwt_in_request()
-        return redirect(url_for('notice.news'))
-    except Exception as e:
-        return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('notice.login', _external=True)}), 401
+def jwt_optional(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_app.config['TESTING']:
+            try:
+                verify_jwt_in_request(optional=True)
+            except Exception as e:
+                pass
+        return f(*args, **kwargs)
+    return wrapper
 
 @notice.route('/news')
-@jwt_required()
+@jwt_optional
 def news():
     notices = Notice.query.order_by(Notice.date.desc()).all()
     return render_template('news_main.html', notices=notices)
 
 @notice.route('/news/<int:notice_id>')
-@jwt_required()
+@jwt_optional
 def news_item(notice_id):
     notice = Notice.query.get_or_404(notice_id)
     return render_template('news_item.html', notice=notice)
 
 @notice.route('/redirect_to_main')
 def redirect_to_main():
-    return redirect('http://localhost:5003/')
+    return redirect('http://kangyk.com/main')
 
 @notice.route('/redirect_to_festival')
 def redirect_to_festival():
-    return redirect('http://localhost:5002/')
+    return redirect('http://kangyk.com/festival')
 
 @notice.route('/redirect_to_course')
 def redirect_to_course():
-    return redirect('http://localhost:5001/course_registration')
+    return redirect('http://kangyk.com/course_registration')
 
 @notice.route('/logout')
-@jwt_required()
+@jwt_optional
 def logout():
-    response = make_response(redirect('http://localhost:5006/login'))
+    response = make_response(redirect('http://kangyk.com/login'))
     unset_jwt_cookies(response)
     return response
 
 @notice.route('/login')
 def login():
-    return redirect('http://localhost:5006/login')
+    return redirect('http://kangyk.com/login')
 
 @notice.route('/api/notices')
 def get_notices():
