@@ -1,0 +1,4 @@
+docker-compose -f docker-compose.test.yaml down -v      
+
+docker-compose -f docker-compose.test.yaml up --build -d
+docker-compose -f docker-compose.test.yaml exec -T login_service python -m unittest test_login_service.py

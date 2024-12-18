@@ -5,13 +5,10 @@ from werkzeug.routing import BuildError
 from config import Config
 from models import db, User
 from datetime import timedelta
-
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
-
-
 
 db.init_app(app)
 jwt = JWTManager(app)
@@ -23,41 +20,43 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-   if request.method == 'POST':
-       
+    if request.method == 'POST':
         try:
             student_id = request.form.get('student_id')
             password = request.form.get('password')
-            
-           
+
             if not student_id or not password:
-               return jsonify({"error": "Student ID and password are required"}), 400
-            
+                return jsonify({"error": "Student ID and password are required"}), 400
+
             user = User.query.filter_by(student_id=student_id).first()
-            
+
             if user and check_password_hash(user.password_hash, password):
-               access_token = create_access_token(identity=str(user.user_id))
-               
-               redirect_url = 'http://localhost:5003'  # 메인 서비스의 URL로 직접 리다이렉션
-               
-               response = make_response(jsonify({
+                access_token = create_access_token(identity=str(user.user_id))
+
+                   # 리디렉션 URL 처리: 요청의 노드 IP를 사용하지만 포트는 30001로 설정
+                parsed_url = urlparse(request.host_url)
+                node_ip = parsed_url.hostname  # 현재 노드의 IP를 가져옴
+                redirect_url = f"http://kangyk.com/main"
+
+                # JWT 토큰을 쿠키에 저장
+                response = make_response(jsonify({
                     'success': True,
                     'message': '로그인 성공',
                     'redirect_url': redirect_url
                 }))
-               set_access_cookies(response, access_token)
-                
-               
-               return response, 200
+                set_access_cookies(response, access_token)
+
+                # 로그인 후 원래 URL로 리디렉션
+                return response, 200
             else:
-               return jsonify({
+                return jsonify({
                     'success': False,
                     'message': '잘못된 사용자 이름 또는 비밀번호입니다.'
                 }), 401
         except Exception as e:
-           return jsonify({"error": "로그인 처리 중 오류가 발생했습니다."}), 500
-    
-   return render_template('login.html')
+            return jsonify({"error": "로그인 처리 중 오류가 발생했습니다."}), 500
+
+    return render_template('login.html')
 
 @app.route('/')
 def home():
@@ -99,7 +98,6 @@ def register():
         except Exception as e:
             db.session.rollback()
         return jsonify({"success": False, "message": "회원가입 중 오류가 발생했습니다."}), 500
-
     return render_template('register.html')
 
 @app.errorhandler(400)

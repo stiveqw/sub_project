@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: login-service-applicationset
+  namespace: login-service
+spec:
+  generators:
+    - list:
+        elements:
+          - name: login-service-appset
+            repoURL: 'git@github.com:YeongKyuKang/login-service.git'
+            targetRevision: LoginService
+            path: 'k8s'
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{targetRevision}}'
+        path: '{{path}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: login-service
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

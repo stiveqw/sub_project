@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login-service-container
+  namespace: login-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: login-service
+  template:
+    metadata:
+      labels:
+        app: login-service
+    spec:
+      containers:
+      - name: login-service-container
+        image: ghcr.io/yeongkyukang/login_service:latest
+        env:
+          - name: JWT_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: JWT_SECRET_KEY
+          - name: DB_USER
+            value: root
+          - name: DB_PASSWORD
+            value: mysql
+          - name: DB_HOST
+            value: mysql-service.default
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: user_db
+      imagePullSecrets:
+      - name: ghcr-secret
