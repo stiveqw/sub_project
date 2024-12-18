@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-service-container
+  namespace: course-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: course-service
+  template:
+    metadata:
+      labels:
+        app: course-service
+    spec:
+      containers:
+      - name: course-service-container
+        image: ghcr.io/yeongkyukang/course_service:latest
+        env:
+          - name: JWT_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: JWT_SECRET_KEY
+          - name: DB_USER
+            value: root
+          - name: DB_PASSWORD
+            value: mysql
+          - name: DB_HOST
+            value: mysql-service.default
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: course_db
+      imagePullSecrets:
+      - name: ghcr-secret

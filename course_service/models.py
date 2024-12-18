@@ -15,6 +15,7 @@ class Course(db.Model):
     department = db.Column(db.String(100))
     year = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+ 
 
 class Registration(db.Model):
     __tablename__ = 'registrations'

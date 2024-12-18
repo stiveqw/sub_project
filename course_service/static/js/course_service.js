@@ -18,7 +18,6 @@ async function fetchCourseData() {
         keptCourses = data.keptCourses || [];
         console.log('Available Courses:', courses);
         console.log('Applied Courses:', appliedCourses);
-        console.log('Kept Courses:', keptCourses);
         showInitialMessage();  // 초기 메시지 표시
         updateAppliedCourses();
         

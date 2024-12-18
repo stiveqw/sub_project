@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  course_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    ports:
+      - "5001:5001"
+    expose:
+      - "5001"
+  
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: course_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql-data:
