@@ -16,6 +16,6 @@ class Config:
     JWT_COOKIE_SECURE = False  # Set to True in production
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 
-    COURSE_SERVICE_URL = os.getenv('COURSE_SERVICE_URL', 'http://localhost:5001')
-    FESTIVAL_SERVICE_URL = os.getenv('FESTIVAL_SERVICE_URL', 'http://localhost:5002')
+    COURSE_SERVICE_URL = os.getenv('COURSE_SERVICE_URL', 'http://kangyk.com/course_registration')
+    FESTIVAL_SERVICE_URL = os.getenv('FESTIVAL_SERVICE_URL', 'http://kangyk.com/festival')
 

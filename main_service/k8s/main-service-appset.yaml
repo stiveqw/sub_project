@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: main-service-applicationset
+  namespace: main-service
+spec:
+  generators:
+    - list:
+        elements:
+          - name: main-service-appset
+            repoURL: 'git@github.com:YeongKyuKang/main-service.git'
+            targetRevision: MainService
+            path: 'k8s'
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{targetRevision}}'
+        path: '{{path}}'
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: main-service
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

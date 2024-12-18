@@ -23,8 +23,7 @@ app.register_blueprint(main_blueprint)
 @app.route('/')
 def index():
     try:
-        verify_jwt_in_request()
-          
+        verify_jwt_in_request()      
         return redirect(url_for('main.index'))
     except Exception as e:
          
@@ -32,12 +31,12 @@ def index():
 
 @app.before_request
 def before_request():
+    if app.config.get('TESTING', False):
+        return
     if request.endpoint and request.endpoint not in ['static', 'main.logout']:
         try:
             verify_jwt_in_request()
-              
-        except Exception as e:
-              
+        except Exception:
             if request.is_json:
                 return jsonify({"error": "Authentication required"}), 401
             return render_template('auth_required.html'), 401
@@ -78,4 +77,3 @@ def favicon():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5003, debug=True)
-

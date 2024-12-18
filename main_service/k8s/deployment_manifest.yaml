@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-service-container
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: main-service
+  template:
+    metadata:
+      labels:
+        app: main-service
+    spec:
+      containers:
+      - name: main-service-container
+        image: ghcr.io/yeongkyukang/main_service:latest # 기본값 설정
+        env:
+          - name: DB_HOST
+            value: mysql-service.default  # MySQL 서비스 이름
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_USER
+            value: root
+          - name: DB_PASSWORD
+            value: mysql
+          - name: DB_NAME
+            value: user_db
+      imagePullSecrets:
+      - name: ghcr-secret
