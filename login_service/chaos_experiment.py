@@ -3,11 +3,14 @@ import threading
 import time
 import random
 import logging
+import itertools
+import string
 from faker import Faker
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import timedelta
 from flask import Flask, jsonify, make_response
 from flask_jwt_extended import JWTManager, create_access_token, set_access_cookies
+
 
 fake = Faker()
 
@@ -27,15 +30,46 @@ jwt = JWTManager(app)
 LOGIN_SERVICE_URL = "http://localhost:5006"
 MAIN_SERVICE_URL = "http://localhost:5003"
 
-def generate_user_data():
-    student_id = f"{random.randint(2020, 2023)}{random.randint(1000, 9999)}"
+login_student_id_iterator = itertools.count(start=20231001)
+login_user_id_iterator = itertools.count(start=1)
+
+register_student_id_iterator = itertools.count(start=20231202)
+register_user_id_iterator = itertools.count(start=202)
+
+def generate_user_data_for_login():
+    user_id = next(login_user_id_iterator)
+    student_id = next(login_student_id_iterator)
+    if student_id > 20231201:
+        raise StopIteration("Maximum number of users reached")
+    
     return {
-        "student_id": student_id,
-        "department": ''.join(filter(str.isalnum, fake.job()))[:20],
-        "name": ''.join(filter(str.isalnum, fake.name()))[:15],
+        "user_id": user_id,
+        "student_id": str(student_id),
+        "department": ''.join(filter(str.isalnum, fake.job()))[:100],
+        "name": ''.join(filter(str.isalnum, fake.name()))[:100],
         "email": f"{student_id}@example.com",
         "phone_number": f"010-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}",
-        "password": ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=12))
+        "password": "testpassword123"  # 모든 사용자에게 동일한 간단한 비밀번호 할당
+    }
+
+def generate_user_data_for_registration():
+    user_id = next(register_user_id_iterator)
+    student_id = next(register_student_id_iterator)
+    
+    if user_id > (202 + 200):
+        raise StopIteration("Maximum number of registration users reached")
+    
+    # 랜덤 비밀번호 생성 (8-12자리, 영문 대소문자, 숫자, 특수문자 포함)
+    password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=random.randint(8, 12)))
+    
+    return {
+        "user_id": user_id,
+        "student_id": str(student_id),
+        "department": fake.job()[:100],  # 100자 이내로 제한
+        "name": fake.name()[:100],  # 100자 이내로 제한
+        "email": f"{student_id}@example.com",
+        "phone_number": f"010-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}",
+        "password": password
     }
 
 def generate_jwt_token(user_id):
@@ -68,26 +102,34 @@ def register_user(user_data):
         return False
 
 def login_user(user_data):
+    logger.info(f"Attempting login for user with student_id: {user_data['student_id']}")
     try:
         response = requests.post(f"{LOGIN_SERVICE_URL}/login", data={
             "student_id": user_data["student_id"],
             "password": user_data["password"]
         })
         if response.status_code == 200:
-            user_id = response.json().get('user_id')
-            if user_id:
-                token = generate_jwt_token(user_id)
-                response = make_response(jsonify({'message': 'Login successful'}))
-                set_access_token_cookie(response, token)
-                cookies = response.headers.get('Set-Cookie')
-                # 메인 서비스 접근 테스트
-                headers = {'Cookie': cookies} if cookies else {}
-                main_response = requests.get(f"{MAIN_SERVICE_URL}/", headers=headers)
-                return main_response.status_code == 200
+            logger.info(f"Login successful for user {user_data['student_id']}")
+            response_data = response.json()
+            if response_data.get('success'):
+                # 서버에서 제공한 리다이렉트 URL로 접근
+                redirect_url = response_data.get('redirect_url')
+                cookies = response.cookies  # 서버에서 설정한 쿠키 사용
+                main_response = requests.get(redirect_url, cookies=cookies)
+                if main_response.status_code == 200:
+                    logger.info(f"Main service access successful for user {user_data['student_id']}")
+                    return True
+                else:
+                    logger.warning(f"Main service access failed for user {user_data['student_id']}. Status code: {main_response.status_code}")
+            else:
+                logger.warning(f"Login failed for user {user_data['student_id']}: {response_data.get('message')}")
+        else:
+            logger.warning(f"Login failed for user {user_data['student_id']}. Status code: {response.status_code}")
         return False
     except requests.RequestException as e:
-        logger.error(f"Login error: {e}")
+        logger.error(f"Login error for user {user_data['student_id']}: {str(e)}")
         return False
+
 
 def access_page(url, cookies=None):
     try:
@@ -98,14 +140,37 @@ def access_page(url, cookies=None):
         logger.error(f"Page access error: {e}")
         return False
 
-def run_chaos_test(num_users=100):
-    users = [generate_user_data() for _ in range(num_users)]
+def run_chaos_test(num_users=200):
+    
+    login_users = []
+    register_users = []
+
+     # 로그인용 사용자 생성
+    for _ in range(min(num_users, 201)):  # 최대 201명까지만 생성 (기존 사용자)
+        try:
+            login_users.append(generate_user_data_for_login())
+        except StopIteration:
+            break
+    
+    # 회원가입용 사용자 생성
+    for _ in range(num_users):
+        try:
+            register_users.append(generate_user_data_for_registration())
+        except StopIteration:
+            break
     
     # 모든 작업을 하나의 리스트에 추가
+ # 태스크 생성
     tasks = []
-    for user in users:
+    
+    # 회원가입 태스크
+    for user in register_users:
         tasks.append(('register', user))
+    
+    # 로그인 태스크
+    for user in login_users:
         tasks.append(('login', user))
+
     for _ in range(num_users * 2):  # 각 사용자당 평균 2번의 페이지 접근
         tasks.append(('access', (random.choice([f"{LOGIN_SERVICE_URL}/login", f"{LOGIN_SERVICE_URL}/register"]), None)))
     

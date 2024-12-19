@@ -36,7 +36,7 @@ def login():
                    # 리디렉션 URL 처리: 요청의 노드 IP를 사용하지만 포트는 30001로 설정
                 parsed_url = urlparse(request.host_url)
                 node_ip = parsed_url.hostname  # 현재 노드의 IP를 가져옴
-                redirect_url = f"http://kangyk.com/main"
+                redirect_url = f"http://localhost:5003/"
 
                 # JWT 토큰을 쿠키에 저장
                 response = make_response(jsonify({
