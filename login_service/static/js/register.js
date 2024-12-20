@@ -11,13 +11,20 @@ document.addEventListener('DOMContentLoaded', function() {
             body: formData,
             credentials: 'include'
         })
-        .then(response => response.json())
+        .then(response => 
+            response.json().catch(() => response.text())
+        )
         .then(data => {
-            if (data.success) {
-                alert(data.message);
-                window.location.href = '/login';
+            if (typeof data === 'object') {
+                // JSON 응답 처리
+                handleJsonResponse(data);
             } else {
-                alert(data.message);
+                // HTML 응답 처리
+                document.body.innerHTML = data;
+                const errorElement = document.querySelector('.error-message');
+                if (errorElement) {
+                    alert(errorElement.textContent);
+                }
             }
         })
         .catch(error => {
@@ -27,3 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function handleJsonResponse(data) {
+    if (data.success) {
+        alert(data.message);
+        window.location.href = '/login';
+    } else {
+        alert(data.message);
+    }
+}

@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: course-service-applicationset
-  namespace: course-service
+  namespace: default
 spec:
   generators:
     - list:
@@ -22,7 +22,7 @@ spec:
         path: '{{path}}'
       destination:
         server: 'https://kubernetes.default.svc'
-        namespace: course-service
+        namespace: default
       syncPolicy:
         automated:
           prune: true

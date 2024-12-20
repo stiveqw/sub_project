@@ -44,14 +44,14 @@ class TestFestivalService(unittest.TestCase):
         self.app_context.pop()
 
     def test_get_courses(self):
-        response = self.client.get('/api/get_courses')
+        response = self.client.get('/course_registration/get_courses')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertTrue(data['success'])
         self.assertIn('courses', data)
 
     def test_search_courses(self):
-        response = self.client.get('/api/search_courses?course_name=Introduction')
+        response = self.client.get('/course_registration/search_courses?course_name=Introduction')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertTrue(data['success'])
@@ -59,7 +59,7 @@ class TestFestivalService(unittest.TestCase):
         self.assertEqual(data['courses'][0]['course_name'], "Introduction to Computer Science")
 
     def test_apply_course(self):
-        response = self.client.post('/api/apply_course', 
+        response = self.client.post('/course_registration/apply_course', 
                                     data=json.dumps({'course_key': 'CS101'}),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -69,12 +69,12 @@ class TestFestivalService(unittest.TestCase):
 
     def test_cancel_course(self):
         # 먼저 과목을 신청합니다
-        self.client.post('/api/apply_course', 
+        self.client.post('/course_registration/apply_course', 
                          data=json.dumps({'course_key': 'CS101'}),
                          content_type='application/json')
 
         # 이제 과목을 취소합니다
-        response = self.client.post('/api/cancel_course', 
+        response = self.client.post('/course_registration/cancel_course', 
                                     data=json.dumps({'course_key': 'CS101'}),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -84,12 +84,12 @@ class TestFestivalService(unittest.TestCase):
 
     def test_get_applied_courses(self):
         # 먼저 과목을 신청합니다
-        self.client.post('/api/apply_course', 
+        self.client.post('/course_registration/apply_course', 
                          data=json.dumps({'course_key': 'CS101'}),
                          content_type='application/json')
 
         # 신청한 과목 목록을 가져옵니다
-        response = self.client.get('/api/get_applied_courses')
+        response = self.client.get('/get_applied_courses')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertTrue(data['success'])

@@ -17,7 +17,7 @@ def jwt_required_custom(fn):
             return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('main.main', _external=True)}), 401
     return wrapper
 
-@main.route('/')
+@main.route('/dashboard')
 @jwt_required_custom
 def index():
     try:

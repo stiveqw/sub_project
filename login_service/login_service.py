@@ -6,6 +6,7 @@ from config import Config
 from models import db, User
 from datetime import timedelta
 from urllib.parse import urlparse
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,21 +19,29 @@ app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_COOKIE_SECURE'] = False  # 개발 환경에서는 False, 프로덕션에서는 True로 설정
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    logger.info("Login route accessed")
     if request.method == 'POST':
+        logger.info("POST request received for login")
         try:
             student_id = request.form.get('student_id')
             password = request.form.get('password')
-
+            logger.info(f"Login attempt for student_id: {student_id}")
             if not student_id or not password:
+                logger.warning("Login failed: Missing student_id or password")
                 return jsonify({"error": "Student ID and password are required"}), 400
 
             user = User.query.filter_by(student_id=student_id).first()
-
+            logger.info(f"User found: {user is not None}")
             if user and check_password_hash(user.password_hash, password):
+                logger.info(f"Login successful for student_id: {student_id}")
                 access_token = create_access_token(identity=str(user.user_id))
-
+                logger.info(f"Access token set for user: {user.user_id}")
                    # 리디렉션 URL 처리: 요청의 노드 IP를 사용하지만 포트는 30001로 설정
                 parsed_url = urlparse(request.host_url)
                 node_ip = parsed_url.hostname  # 현재 노드의 IP를 가져옴
@@ -45,17 +54,20 @@ def login():
                     'redirect_url': redirect_url
                 }))
                 set_access_cookies(response, access_token)
-
-                # 로그인 후 원래 URL로 리디렉션
+                if 'access_token_cookie' in response.headers.get('Set-Cookie', ''):
+                    logger.info(f"Access token cookie successfully set for user: {user.user_id}")
+                else:
+                    logger.warning(f"Failed to set access token cookie for user: {user.user_id}")
                 return response, 200
             else:
+                logger.warning(f"Login failed for student_id: {student_id}")
                 return jsonify({
                     'success': False,
                     'message': '잘못된 사용자 이름 또는 비밀번호입니다.'
                 }), 401
         except Exception as e:
             return jsonify({"error": "로그인 처리 중 오류가 발생했습니다."}), 500
-
+    logger.info("GET request received for login page")
     return render_template('login.html')
 
 @app.route('/')
@@ -75,13 +87,13 @@ def register():
         email = request.form.get('email')
         phone_number = request.form.get('phone_number')
         password = request.form.get('password')
-
+        
         if User.query.filter_by(student_id=student_id).first():
             return jsonify({"success": False, "message": "이미 등록된 학번입니다."}), 400
 
         if User.query.filter_by(email=email).first():
             return jsonify({"success": False, "message": "이미 등록된 이메일입니다."}), 400
-
+        
         new_user = User(
             student_id=student_id,
             department=department,
@@ -97,7 +109,7 @@ def register():
             return jsonify({"success": True, "message": "회원가입이 완료되었습니다."}), 201
         except Exception as e:
             db.session.rollback()
-        return jsonify({"success": False, "message": "회원가입 중 오류가 발생했습니다."}), 500
+        return jsonify('register.html', error="이미 등록된 이메일입니다."), 500
     return render_template('register.html')
 
 @app.errorhandler(400)

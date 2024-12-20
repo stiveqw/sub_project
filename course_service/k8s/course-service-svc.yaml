@@ -4,12 +4,12 @@ metadata:
   name: course-service-svc
   labels:
     app: course-service
-  namespace: course-service
+  namespace: default
 spec:
   selector:
     app: course-service
   ports:
     - protocol: TCP
       port: 80         
-      targetPort: 5006
-  type: ClusterIP
+      targetPort: 5001
+  type: LoadBalancer

@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
 
 # pip 업그레이드
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install debugpy
 
 # mysqlclient 설치를 위한 환경 변수 설정
 ENV MYSQLCLIENT_CFLAGS="-I/usr/include/mysql"

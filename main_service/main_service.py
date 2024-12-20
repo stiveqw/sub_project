@@ -20,7 +20,7 @@ db.init_app(app)
 
 app.register_blueprint(main_blueprint)
 
-@app.route('/')
+@app.route('/main')
 def index():
     try:
         verify_jwt_in_request()      

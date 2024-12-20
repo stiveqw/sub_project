@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: course-service-container
-  namespace: course-service
+  namespace: default
 spec:
   replicas: 3
   selector:
@@ -32,5 +32,7 @@ spec:
             value: "3306"
           - name: DB_NAME
             value: course_db
+        ports:
+          - containerPort: 5001
       imagePullSecrets:
       - name: ghcr-secret
