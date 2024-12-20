@@ -19,6 +19,7 @@ TEST_USER_ID = 99
 def jwt_req_custom(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        logger.info(f"JWT verification for function: {fn.__name__}")
         if not app.config['TESTING']:
             verify_jwt_in_request()
         else:
@@ -28,19 +29,27 @@ def jwt_req_custom(fn):
 
 def get_current_user_id():
     if app.config['TESTING']:
+        logger.info(f"Using test user ID: {TEST_USER_ID}")
         return TEST_USER_ID
+    user_id=get_jwt_identity()
+    logger.info(f"Current user ID: {user_id}")
     return get_jwt_identity()
 #JWT_REQUIRED와 verify_jwt_in_request를 사용해야한다던 오류는 패키지 버전을 전부 업그레이드해서
 #최신화 하는 것으로 해결
 @festival.route('/festival')
 @jwt_req_custom
 def home():
+    logger.info("Accessing home page")
     page = request.args.get('page', 1, type=int)
     per_page = 10
     user_id = get_current_user_id()
 
     festivals = Festival.query.order_by(Festival.date).paginate(page=page, per_page=per_page, error_out=False)
     reserved_festival_keys = [r.festival_key for r in Reservation.query.filter_by(user_id=user_id, status='Reserved').all()]
+    logger.info(f"Fetching festivals for page {page}")
+    logger.info(f"Found {len(festivals.items)} festivals for current page")
+    logger.info(f"User {user_id} has {len(reserved_festival_keys)} reserved festivals")
+    logger.info(f"User {user_id} has {len(user_reserved_festivals)} active reservations")
     user_reserved_festivals = db.session.query(
         Festival,
         Reservation.id.label('reservation_id'),
@@ -67,7 +76,7 @@ def home():
         festival_dict['is_reserved'] = festival.festival_key in reserved_festival_keys
         festival_dict['is_full'] = festival.capacity >= festival.total_seats
         festivals_data.append(festival_dict)
-
+    logger.info(f"Rendering home page with {len(festivals_data)} festivals")
     return render_template('festival_main.html', 
                            festivals=festivals_data,
                            reserved_festival_keys=reserved_festival_keys,
@@ -77,14 +86,20 @@ def home():
 @jwt_req_custom
 def apply(festival_key):
     user_id = get_current_user_id()
+    logger.info(f"user_id: {user_id}")
+    logger.info(f"Fetching festival details for key: {festival_key}")
     festival = Festival.query.filter_by(festival_key=festival_key).first_or_404()
     # 현재 사용자의 예약 상태 확인
     reservation = Reservation.query.filter_by(festival_key=festival_key, user_id=user_id).first()
     is_reserved = reservation is not None and reservation.status == 'Reserved'
+    
+    logger.info(f"User {user_id} reservation status for festival {festival_key}: {'Reserved' if is_reserved else 'Not Reserved'}")
+    logger.info(f"Total reserved seats for festival {festival_key}: {len(reserved_seats)}")
+
     reserved_seats = [r.seat_number for r in Reservation.query.filter_by(festival_key=festival_key, status='Reserved').all()]
     
     image = request.args.get('image', 'default.jpg')
-
+    logger.info(f"Rendering apply page for festival: {festival_key}")
     return render_template('festival_apply.html', 
                            festival=festival, 
                            reserved_seats=reserved_seats,
@@ -154,71 +169,92 @@ def api_apply():
 @festival.route('/festival/cancel_reservation/<int:reservation_id>', methods=['POST'])
 @jwt_req_custom
 def cancel_reservation(reservation_id):
+    logger.info(f"Cancellation request for reservation ID: {reservation_id}")
     try:
         user_id = get_current_user_id()
+        logger.info(f"user for ID: {user_id}")
         reservation = Reservation.query.filter_by(id=reservation_id, user_id=user_id).first()
         
         if not reservation:
+           logger.warning(f"Reservation not found or not authorized: ID {reservation_id}, User {user_id}")
            return jsonify({"success": False, "message": "Reservation not found or not authorized"}), 404
         
+        logger.info(f"Reservation status: {reservation.status}")
+
         if reservation.status == 'Cancelled':
+           logger.warning(f"Reservation {reservation_id} is already cancelled")
            return jsonify({"success": False, "message": "Reservation is already cancelled"}), 400
         
         festival = Festival.query.filter_by(festival_key=reservation.festival_key).first()
+        logger.info(f"Fetching associated festival details for key: {reservation.festival_key}")
         if not festival:
+           logger.error(f"Associated festival not found for reservation {reservation_id}")
            return jsonify({"success": False, "message": "Associated festival not found"}), 404
+        
+        logger.info(f"Updating reservation status to Cancelled")
         reservation.status = 'Cancelled'
+        logger.info(f"Updating festival capacity to {festival.capacity - 1}")
         if festival.capacity > 0:
             festival.capacity -= 1
         
         db.session.commit()
+        logger.info(f"Reservation {reservation_id} cancelled successfully")
         return jsonify({"success": True, "message": "Reservation cancelled successfully"}), 200
     
     except Exception as e:
+        logger.info({"success": False, "message": str(e)})
         db.session.rollback()
     return jsonify({"success": False, "message": str(e)}), 500
 
 @festival.route('/festival/festivals')
 @jwt_req_custom
 def get_festivals():
+    logger.info("Fetching all festivals")
     user_id = get_current_user_id()
     
     festivals = Festival.query.order_by(Festival.date).all()
+    logger.info(f"Fetched {len(festivals)} festivals from database")
     reserved_festival_keys = [r.festival_key for r in Reservation.query.filter_by(user_id=user_id, status='Reserved').all()]
-    
+    logger.info(f"User {user_id} has {len(reserved_festival_keys)} reserved festivals")
+
     festivals_data = []
+    logger.info("Processing festival data for response")
     for festival in festivals:
         festival_dict = festival.to_dict()
         festival_dict['is_reserved'] = festival.festival_key in reserved_festival_keys
         festival_dict['is_full'] = festival.capacity >= festival.total_seats
         festivals_data.append(festival_dict)
-    
+    logger.info(f"Returning data for {len(festivals_data)} festivals") 
     return jsonify({"success": True, "festivals": festivals_data})
 
 @festival.route('/login')
 @jwt_req_custom
 def login():
+    logger.info("Redirecting to login page")
     return redirect("http://kangyk.com/login")
 
 @festival.route('/logout')
 def logout():
+   logger.info("User logging out")
    response = make_response(redirect('http://kangyk.com/login'))
    unset_jwt_cookies(response)
    return response
 
 
 @festival.route('/main')
-
 def main():
+    logger.info("Redirecting to main page")
     return redirect("http://kangyk.com/main")
 
 @festival.route('/notice')
 
 def news():
+    logger.info("Redirecting to notice page")
     return redirect("http://kangyk.com/notice")
 
 @festival.route('/course')
 
 def course():
+    logger.info("Redirecting to course registration page")
     return redirect("http://kangyk.com/course_registration")
 

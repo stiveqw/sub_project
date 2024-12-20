@@ -72,14 +72,17 @@ def login():
 
 @app.route('/')
 def home():
+    logger.info("Home / route accessed, redirecting to / login")
     return redirect(url_for('/login'))
 
 @app.route('/redirect_to_register')
 def redirect_to_register():
+    logger.info("Redirecting to register page")
     return redirect(url_for('register'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    logger.info("Register route accessed")
     if request.method == 'POST':
         student_id = request.form.get('student_id')
         department = request.form.get('department')
@@ -87,11 +90,15 @@ def register():
         email = request.form.get('email')
         phone_number = request.form.get('phone_number')
         password = request.form.get('password')
+
+        logger.info(f"Registration attempt for student_id: {student_id}, email: {email}")
         
         if User.query.filter_by(student_id=student_id).first():
+            logger.warning(f"Registration failed: Student ID {student_id} already exists")
             return jsonify({"success": False, "message": "이미 등록된 학번입니다."}), 400
 
         if User.query.filter_by(email=email).first():
+            logger.warning(f"Registration failed: Email {email} already exists")
             return jsonify({"success": False, "message": "이미 등록된 이메일입니다."}), 400
         
         new_user = User(
@@ -106,24 +113,30 @@ def register():
         try:
             db.session.add(new_user)
             db.session.commit()
+            logger.info(f"User registered successfully: {student_id}")
             return jsonify({"success": True, "message": "회원가입이 완료되었습니다."}), 201
         except Exception as e:
             db.session.rollback()
+            logger.error(f"Error during user registration: {str(e)}", exc_info=True)
         return jsonify('register.html', error="이미 등록된 이메일입니다."), 500
     return render_template('register.html')
 
 @app.errorhandler(400)
 def bad_request(error):
+   logger.warning(f"Bad Request: {error}")
    return jsonify({"error": "잘못된 요청입니다."}), 400
 
 @app.errorhandler(401)
 def unauthorized(error):
+    logger.warning(f"Unauthorized access: {error}")
     return jsonify({"error": "인증되지 않은 접근입니다."}), 401
 
 @app.errorhandler(500)
 def internal_server_error(error):
+   logger.error(f"Internal Server Error: {error}", exc_info=True)
    return jsonify({"error": "서버 내부 오류가 발생했습니다."}), 500
 
 if __name__ == '__main__':
+    logger.info("Starting the Flask application")
     app.run(host='0.0.0.0', port=5006, debug=True)
 

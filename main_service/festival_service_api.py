@@ -2,8 +2,6 @@ import requests
 from flask import current_app
 from flask_jwt_extended import get_jwt
 
-
-
 class FestivalServiceAPI:
     @staticmethod
     def get_festivals():
