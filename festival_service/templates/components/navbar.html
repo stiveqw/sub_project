@@ -2,10 +2,10 @@
     <nav>
         <div class="logo">University Services</div>
         <ul>
-            <li><a href="{{ url_for('festival.redirect_to_main') }}">Home</a></li>
+            <li><a href="{{ url_for('festival.main') }}">Home</a></li>
             <li><a href="{{ url_for('festival.home') }}">Festival</a></li>
-            <li><a href="{{ url_for('festival.redirect_to_news') }}">News</a></li>
-            <li><a href="{{ url_for('festival.redirect_to_course') }}">Course registration</a></li>
+            <li><a href="{{ url_for('festival.news') }}">News</a></li>
+            <li><a href="{{ url_for('festival.course') }}">Course registration</a></li>
             <li>
                 <a href="{{ url_for('festival.logout') }}" class="logout-btn">Logout</a>
             </li>

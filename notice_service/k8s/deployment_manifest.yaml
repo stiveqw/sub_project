@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: notice-service-container
-  namespace: notice-service
+  namespace: default
 spec:
   replicas: 3
   selector:
@@ -27,5 +27,7 @@ spec:
             value: "3306"
           - name: DB_NAME
             value: notice_db
+        ports:
+          - containerPort: 5004
       imagePullSecrets:
       - name: ghcr-secret

@@ -8,9 +8,6 @@ from models import db
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
-app.config['WTF_CSRF_ENABLED'] = False  # CSRF 보호 비활성화
-
 # JWT 설정
 jwt = JWTManager(app)
 app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']  # JWT 토큰 위치 설정
@@ -26,7 +23,6 @@ def index():
         verify_jwt_in_request()      
         return redirect(url_for('main.index'))
     except Exception as e:
-         
         return render_template('auth_required.html'), 401
 
 @app.before_request

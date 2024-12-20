@@ -8,7 +8,7 @@ const itemsPerPage = 5;
 
 async function fetchCourseData() {
     try {
-        const response = await fetch('/course_registration/course_registration/get_courses');
+        const response = await fetch('/course_registration/get_courses');
         if (!response.ok) {
             throw new Error('Failed to fetch course data');
         }
@@ -203,7 +203,7 @@ function updateAppliedCourses() {
 
 async function handleApply(courseKey) {
     try {
-        const response = await fetch('/apply_course', {
+        const response = await fetch('/course_registration/apply_course', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

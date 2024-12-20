@@ -40,5 +40,6 @@ function handleJsonResponse(data) {
         window.location.href = '/login';
     } else {
         alert(data.message);
+        window.location.href = '/register';
     }
 }

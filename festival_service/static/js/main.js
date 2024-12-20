@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ? `<button class="apply-button reserved" disabled>이미 예약한 축제입니다</button>`
                     : isFull
                         ? `<button class="apply-button full" disabled>신청 마감</button>`
-                        : `<a href="/apply/${festival.festival_key}?image=${encodeURIComponent(festivalServiceImages[imageIndex])}" class="apply-button">지금 신청하기</a>`
+                        : `<a href="/festival/apply/${festival.festival_key}?image=${encodeURIComponent(festivalServiceImages[imageIndex])}" class="apply-button">지금 신청하기</a>`
                 }
             `;
             festivalGrid.appendChild(festivalElement);
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading('festival-loading-indicator');
         showLoading('cancel-loading-indicator');
         
-        fetch('/api/festivals', {
+        fetch('/festival/festivals', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function cancelReservation(reservationId) {
-        fetch(`/api/cancel_reservation/${reservationId}`, {
+        fetch(`/festival/cancel_reservation/${reservationId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

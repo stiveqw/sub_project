@@ -4,12 +4,11 @@ from . import festival
 from models import Reservation, Festival, User, db
 from datetime import datetime
 from functools import wraps
-from config import Config
 from flask import Flask
 import logging
 
 app = Flask(__name__)
-app.config.from_object(Config)
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -33,7 +32,7 @@ def get_current_user_id():
     return get_jwt_identity()
 #JWT_REQUIRED와 verify_jwt_in_request를 사용해야한다던 오류는 패키지 버전을 전부 업그레이드해서
 #최신화 하는 것으로 해결
-@festival.route('/')
+@festival.route('/festival')
 @jwt_req_custom
 def home():
     page = request.args.get('page', 1, type=int)
@@ -74,7 +73,7 @@ def home():
                            reserved_festival_keys=reserved_festival_keys,
                            user_reserved_festivals=user_reserved_festivals)
 
-@festival.route('/apply/<festival_key>')
+@festival.route('/festival/apply/<festival_key>')
 @jwt_req_custom
 def apply(festival_key):
     user_id = get_current_user_id()
@@ -92,7 +91,7 @@ def apply(festival_key):
                            is_reserved=is_reserved,
                            image=image)
 
-@festival.route('/api/apply', methods=['POST'])
+@festival.route('/festival/apply', methods=['POST'])
 @jwt_req_custom
 def api_apply():
     user_id = get_current_user_id()
@@ -152,7 +151,7 @@ def api_apply():
         logger.error(f"Error during reservation: {str(e)}")
         return jsonify({"success": False, "message": "예약 중 오류가 발생했습니다."}), 500
 
-@festival.route('/api/cancel_reservation/<int:reservation_id>', methods=['POST'])
+@festival.route('/festival/cancel_reservation/<int:reservation_id>', methods=['POST'])
 @jwt_req_custom
 def cancel_reservation(reservation_id):
     try:
@@ -179,7 +178,7 @@ def cancel_reservation(reservation_id):
         db.session.rollback()
     return jsonify({"success": False, "message": str(e)}), 500
 
-@festival.route('/api/festivals')
+@festival.route('/festival/festivals')
 @jwt_req_custom
 def get_festivals():
     user_id = get_current_user_id()
@@ -202,25 +201,24 @@ def login():
     return redirect("http://kangyk.com/login")
 
 @festival.route('/logout')
-@jwt_req_custom
 def logout():
    response = make_response(redirect('http://kangyk.com/login'))
    unset_jwt_cookies(response)
    return response
 
 
-@festival.route('/redirect_to_main')
-@jwt_req_custom
-def redirect_to_main():
+@festival.route('/main')
+
+def main():
     return redirect("http://kangyk.com/main")
 
-@festival.route('/redirect_to_news')
-@jwt_req_custom
-def redirect_to_news():
+@festival.route('/notice')
+
+def news():
     return redirect("http://kangyk.com/notice")
 
-@festival.route('/redirect_to_course')
-@jwt_req_custom
-def redirect_to_course():
+@festival.route('/course')
+
+def course():
     return redirect("http://kangyk.com/course_registration")
 

@@ -18,16 +18,38 @@ def jwt_req_custom(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not app.config['TESTING']:
-            verify_jwt_in_request()
+            logger.info(f"Attempting JWT verification for function: {fn.__name__}")
+            try:
+                verify_jwt_in_request()
+                logger.info("JWT verification successful")
+            except Exception as e:
+                logger.error(f"JWT verification failed: {str(e)}")
+                raise
         else:
+            logger.info(f"JWT verification optional (Testing mode) for function: {fn.__name__}")
             verify_jwt_in_request(optional=True)
         return fn(*args, **kwargs)
     return wrapper
 
 def get_current_user_id():
     if app.config['TESTING']:
+        logger.info(f"Using test user ID: {TEST_USER_ID}")
         return TEST_USER_ID
-    return get_jwt_identity()
+    user_id = get_jwt_identity()
+    logger.info(f"Retrieved user ID from JWT: {user_id}")
+    return user_id
+
+@course.route('/course_registration')
+def course_registration():
+    logger.info("수강 신청 엔드포인트 접근")
+    try:
+        logger.info("수강 신청을 위한 JWT 검증 시도")
+        verify_jwt_in_request()
+        logger.info("JWT 검증 성공, 수강 신청 페이지 렌더링")
+        return render_template('course_service.html')
+    except Exception as e:
+        logger.error(f"수강 신청을 위한 JWT 검증 실패: {str(e)}")
+        return render_template('auth_required.html'), 401
 
 @course.route('/course_registration/get_courses', methods=['GET'])
 @jwt_req_custom
@@ -273,17 +295,17 @@ def get_applied_courses():
         return jsonify({"success": False, "message": str(e)}), 500
 
 @course.route('/main')
-def redirect_to_main():
+def main():
     logger.info('Redirecting to main page')
     return redirect('http://kangyk.com/main')
 
 @course.route('/festival')
-def redirect_to_festival():
+def festival():
     logger.info('Redirecting to festival page')
     return redirect('http://kangyk.com/festival')
 
 @course.route('/notice')
-def redirect_to_news():
+def news():
     logger.info('Redirecting to news page')
     return redirect('http://kangyk.com/notice')
 

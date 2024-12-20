@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: notice-service-applicationset
-  namespace: notice-service
+  namespace: default
 spec:
   generators:
     - list:
@@ -22,7 +22,7 @@ spec:
         path: '{{path}}'
       destination:
         server: 'https://kubernetes.default.svc'
-        namespace: notice-service
+        namespace: default
       syncPolicy:
         automated:
           prune: true

@@ -4,12 +4,12 @@ metadata:
   name: notice-service-svc
   labels:
     app: notice-service
-  namespace: notice-service
+  namespace: default
 spec:
   selector:
     app: notice-service
   ports:
     - protocol: TCP
       port: 80         
-      targetPort: 5006
-  type: ClusterIP
+      targetPort: 5004
+  type: LoadBalancer

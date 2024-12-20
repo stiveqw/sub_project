@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!window.selectedSeat) return;
 
                 const seatNumber = window.selectedSeat.textContent;
-                fetch('/api/apply', {
+                fetch('/festival/apply', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         alert('신청이 성공적으로 완료되었습니다!');
                         setTimeout(() => {
-                            window.location.href = '/';
+                            window.location.href = '/festival';
                         }, 500); // 0.5초 후에 리다이렉트
                     } else {
                         alert(data.message);

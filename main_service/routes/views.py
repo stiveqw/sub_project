@@ -53,7 +53,7 @@ def index():
     except Exception as e:
         return "Internal Server Error", 500
 
-@main.route('/api/festivals')
+@main.route('/festival/festivals')
 @jwt_required_custom
 def api_festivals():
     try:
@@ -71,30 +71,26 @@ def api_festivals():
         return jsonify({"success": False, "error": "An unexpected error occurred"}), 500
 
 @main.route('/festival')
-@jwt_required_custom
 def festival():
-    return redirect('http://kangyk.com/festival')
+    return redirect('http://localhost:5002/festival')
 
-@main.route('/news')
-@jwt_required_custom
-def news():
-    return redirect('http://kangyk.com/notice')
+@main.route('/notice')
+def notice():
+    return redirect('http://localhost:5004/notice')
 
 @main.route('/course_registration')
-@jwt_required_custom
 def course_registration():
-    return redirect('http://kangyk.com/course_registration')
+    return redirect('http://localhost:5001/course_registration')
 
 @main.route('/logout')
-@jwt_required_custom
 def logout():
     if current_app.config.get('TESTING', False):
-        return redirect('http://kangyk.com/main')
+        return redirect('http://localhost:5003/main')
 
-    response = make_response(redirect('http://kangyk.com/login'))
+    response = make_response(redirect('http://localhost:5006/login'))
     unset_jwt_cookies(response)
     return response
 
 @main.route('/login')
 def main():
-    return redirect('http://kangyk.com/login')
+    return redirect('http://localhost:5006/login')

@@ -9,7 +9,7 @@ class FestivalServiceAPI:
     def get_festivals():
         try:
             festival_service_url = current_app.config['FESTIVAL_SERVICE_URL']
-            full_url = f"{festival_service_url}/api/festivals"
+            full_url = f"{festival_service_url}/festival/festivals"
 
             
             # Get the JWT token
