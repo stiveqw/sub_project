@@ -1,3 +1,4 @@
+
 body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
@@ -8,14 +9,18 @@ body {
 header {
   background-color: black;
   color: white;
-  padding: 1rem;
-  margin-bottom: 20px;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 nav {
   display: flex;
   justify-content: space-between;
-  align-items: right;
+  align-items: center;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
@@ -23,17 +28,18 @@ nav {
   font-weight: bold;
 }
 
-nav ul {
+.nav-menu {
   list-style-type: none;
   padding: 0;
   display: flex;
+  margin: 0;
 }
 
-nav ul li {
+.nav-menu li {
   margin-left: 1rem;
 }
 
-nav ul li a {
+.nav-menu li a {
   color: white;
   text-decoration: none;
   padding: 0.5rem 1rem;
@@ -41,7 +47,7 @@ nav ul li a {
   transition: background-color 0.3s ease;
 }
 
-nav ul li a:hover {
+.nav-menu li a:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -95,7 +101,6 @@ nav ul li a:hover {
 .hero p {
   font-size: 1.5rem;
 }
-
 footer {
   background-color: black;
   color: white;

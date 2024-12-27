@@ -322,100 +322,108 @@ p {
   
 
 body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
 header {
-    background-color: black;
-    color: white;
-    padding: 1rem;
-    margin-bottom: 20px;
+  background-color: black;
+  color: white;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
-nav ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
+.nav-menu {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  margin: 0;
 }
 
-nav ul li {
-    margin-left: 1rem;
+.nav-menu li {
+  margin-left: 1rem;
 }
 
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
+.nav-menu li a {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
-nav ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.nav-menu li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .logout-btn {
-    background-color: #f44336;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  background-color: #f44336;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .logout-btn:hover {
-    background-color: #d32f2f;
+  background-color: #d32f2f;
 }
 
-
 .hero {
-    background-image: url('/static/images/course_background.jpg');
-    background-size: cover;
-    background-position: center;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    position: relative;
-  }
-  
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-  }
+  background-image: url('/static/images/course_background.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  position: relative;
+}
 
-  .hero h1, .hero p {
-    position: relative;
-    z-index: 1;
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero h1, .hero p {
+  position: relative;
+  z-index: 1;
 }
 
 .hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: white;
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
+
+.hero p {
+  font-size: 1.5rem;
+}
+
 
 footer {
     background-color: black;
