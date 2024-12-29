@@ -49,7 +49,6 @@ def home():
     logger.info(f"Fetching festivals for page {page}")
     logger.info(f"Found {len(festivals.items)} festivals for current page")
     logger.info(f"User {user_id} has {len(reserved_festival_keys)} reserved festivals")
-    logger.info(f"User {user_id} has {len(user_reserved_festivals)} active reservations")
     user_reserved_festivals = db.session.query(
         Festival,
         Reservation.id.label('reservation_id'),
@@ -58,7 +57,7 @@ def home():
         Reservation.reservation_time
     ).join(Reservation, Festival.festival_key == Reservation.festival_key
     ).filter(Reservation.user_id == user_id, Reservation.status == 'Reserved').all()
-
+    logger.info(f"User {user_id} has {len(user_reserved_festivals)} active reservations")
     user_reserved_festivals = [
         {
             'id': res.reservation_id,
@@ -94,10 +93,8 @@ def apply(festival_key):
     is_reserved = reservation is not None and reservation.status == 'Reserved'
     
     logger.info(f"User {user_id} reservation status for festival {festival_key}: {'Reserved' if is_reserved else 'Not Reserved'}")
-    logger.info(f"Total reserved seats for festival {festival_key}: {len(reserved_seats)}")
-
     reserved_seats = [r.seat_number for r in Reservation.query.filter_by(festival_key=festival_key, status='Reserved').all()]
-    
+    logger.info(f"Total reserved seats for festival {festival_key}: {len(reserved_seats)}")
     image = request.args.get('image', 'default.jpg')
     logger.info(f"Rendering apply page for festival: {festival_key}")
     return render_template('festival_apply.html', 
