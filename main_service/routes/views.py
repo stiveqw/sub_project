@@ -23,7 +23,7 @@ def jwt_required_custom(fn):
             return fn(*args, **kwargs)
         except Exception as e:
             logger.error(f"JWT verification failed: {str(e)}")
-            return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('main.login', _external=True)}), 401
+            return jsonify({"error": "로그인이 필요한 서비스입니다.", "redirect": url_for('main.main', _external=True)}), 401
     return wrapper
 
 @main.route('/dashboard')
@@ -122,7 +122,7 @@ def logout():
     return response
 
 @main.route('/login')
-def login():
+def main():
     logger.info("Entering main function")
     logger.debug("Redirecting to login page")
     return redirect('http://localhost:5006/login')
