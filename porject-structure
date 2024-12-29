@@ -32,13 +32,25 @@ flask-microservices/
 │   ├── requirements.txt
 │   ├── config.py
 │   ├── models.py
+│   ├── init.sql
 │   ├── course_service.py
+│   ├── test_course_service.py
+│   ├── chaos_experiment.py
+│   ├── k8s/
+│   │   ├── course-service-appset.yaml
+│   │   ├── course-service-bind.yaml
+│   │   ├── course-service-hpa.yaml
+│   │   ├── course-service-role.yaml
+│   │   ├── course-service-serviceaccount.yaml
+│   │   ├── course-service-svc.yaml
+│   │   └── deployment_manifest.yaml
 │   ├── routes/
 │   │   ├── __init__.py
 │   │   └── views.py
 │   ├── static/
 │   │   ├── css/
 │   │   │   └── style.css
+│   │   └── images/
 │   │   └── js/
 │   │       ├── auth_check.js
 │   │       └── course_service.js
